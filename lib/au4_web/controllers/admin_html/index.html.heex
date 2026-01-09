@@ -1,0 +1,198 @@
+ <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer") and
+          !Au4.Account.User.has_role?(@current_user, "Super admin")do %>
+<div class="space-y-8">
+  <h1 class="text-2xl font-bold text-gray-900">Owner Overview</h1>
+
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Total Apartments</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
+      <dd class="mt-1">
+  <select 
+    name="active_apartment" 
+    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
+  >
+    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+      <option disabled selected>No Apartments Assigned</option>
+    <% else %>
+      <%= for ua <- @stats.current_user.user_apartments do %>
+      <%= if ua.role.name == "Owner" do %>
+      
+        <option value={ua.apartment.id}>
+           <%= ua.apartment.name %> <%!-- (<%= ua.role.name %>) --%>
+        </option>
+        <% end %>
+      <% end %>
+    <% end %>
+  </select>
+</dd>
+    </div>
+  </div>
+
+  <div class="bg-white shadow border rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Role</th>
+
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <%= for user <- @users do %>
+          <tr>
+            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
+           <td class="px-6 py-4 text-sm text-gray-500">
+            <%= for ua <- user.user_apartments do %>
+              <div><%= ua.role.name %></div>
+            <% end %>
+          </td>
+
+          </tr>
+        <% end %>
+      </tbody> 
+    </table>
+  </div>
+</div>
+<% end %>
+
+ <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+         <%!-- Au4.Account.User.has_permission?(@current_user, "create_useqwer") --%>
+<div class="space-y-8">
+  <h1 class="text-2xl font-bold text-gray-900">Super admin Overview</h1>
+
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Total Apartments</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Verified Accounts</dt>
+      <dd class="mt-1">
+    <select
+      name="active_apartment"
+      class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10
+            text-base font-bold text-green-600 focus:border-green-500
+            focus:outline-none focus:ring-green-500 sm:text-sm"
+    >
+      <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+        <%= for apartment <- @apartments do %>
+          <option value={apartment.id}><%= apartment.name %></option>
+        <% end %>
+      <% else %>
+        <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+          <option disabled selected>No Apartments Assigned</option>
+        <% else %>
+          <%= for ua <- @stats.current_user.user_apartments do %>
+            <option value={ua.apartment.id}><%= ua.apartment.name %></option>
+          <% end %>
+        <% end %>
+      <% end %>
+    </select>
+
+</dd>
+    </div>
+  </div>
+
+  <div class="bg-white shadow border rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Role</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <%= for user <- @users do %>
+          <tr>
+            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
+            <td class="px-6 py-4 text-sm text-gray-500">
+            <%= for ua <- user.user_apartments do %>
+              <div><%= ua.role.name %> </div>
+            <% end %>
+
+            <%= for ua <- user.roles do %>
+              <div><%= ua.name %> </div>
+            <% end %>
+
+
+          </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% end %>
+
+ <%= if Au4.Account.User.has_role?(@current_user, "tenant") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer")do %>
+<div class="space-y-8">
+  <h1 class="text-2xl font-bold text-gray-900">Tenant Overview</h1>
+
+  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
+      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
+    </div>
+    <div class="bg-white p-6 shadow rounded-lg border">
+      <dt class="text-sm font-medium text-gray-500">Verified Accounts</dt>
+      <dd class="mt-1">
+  <select 
+    name="active_apartment" 
+    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
+  >
+    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+      <option disabled selected>No Apartments Assigned</option>
+    <% else %>
+      <%= for ua <- @stats.current_user.user_apartments do %>
+        <option value={ua.apartment.id}>
+         <%= ua.apartment.name %>   <%!-- (<%= ua.role.name %>) --%>
+        </option>
+      <% end %>
+    <% end %>
+  </select>
+</dd>
+    </div>
+  </div>
+
+  <div class="bg-white shadow border rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-300">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <%= for user <- @users do %>
+          <tr>
+            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
+            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+<% end %>

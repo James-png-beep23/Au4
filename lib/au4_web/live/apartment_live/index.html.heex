@@ -1,0 +1,57 @@
+<.header>
+  Listing Apartments
+  <:actions>
+    <%!-- Check permission to show the New button --%>
+<%= if Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") || Au4.Account.User.has_role?(@current_user, "Super admin")  do %>
+      <.link patch={~p"/apartments/new"}>
+        <.button>New Apartment</.button>
+      </.link>
+    <% end %>
+  </:actions>
+</.header>
+
+<%= if Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") || Au4.Account.User.has_role?(@current_user, "Super admin")  do %>
+  <.table
+    id="apartments"
+    rows={@streams.apartments}
+    row_click={fn {_id, apartment} -> JS.navigate(~p"/apartments/#{apartment}") end}
+  >   
+    <:col :let={{_id, apartment}} label="Name"><%= apartment.name %></:col>
+    <:col :let={{_id, apartment}} label="Location"><%= apartment.location %></:col>
+
+    <:action :let={{_id, apartment}}>
+      <.link 
+        navigate={~p"/apartments/#{apartment.id}/assign_member"} 
+        class="text-blue-600 font-semibold hover:text-blue-800"
+      >
+        Assign Member
+      </.link>
+      <div class="sr-only">
+        <.link navigate={~p"/apartments/#{apartment}"}>Show</.link>
+      </div>
+      <.link patch={~p"/apartments/#{apartment}/edit"}>Edit</.link>
+    </:action>
+
+    <:action :let={{id, apartment}}>
+      <%= if Au4.Account.User.has_role?(@current_user, "Super admin") || Au4.Account.User.has_role?(@current_user, "support")   do %> 
+        <.link
+          phx-click={JS.push("delete", value: %{id: apartment.id}) |> hide("##{id}")}
+          data-confirm="Are you sure?"
+        >
+          Delete
+        </.link>
+      <% end %>
+    </:action>
+  </.table>
+<% end %>
+
+<.modal :if={@live_action in [:new, :edit]} id="apartment-modal" show on_cancel={JS.patch(~p"/apartments")}>
+  <.live_component
+    module={Au4Web.ApartmentLive.FormComponent}
+    id={@apartment.id || :new}
+    title={@page_title}
+    action={@live_action}
+    apartment={@apartment}
+    patch={~p"/apartments"}
+  />
+</.modal>

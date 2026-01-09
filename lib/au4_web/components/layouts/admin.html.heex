@@ -1,0 +1,90 @@
+
+<div class="min-h-screen bg-gray-100 flex">
+  <aside class="w-64 bg-slate-900 text-white hidden md:block">
+    <div class="p-6 font-bold text-xl border-b border-slate-800">AU4 Admin</div>
+
+    
+    <nav class="p-4 space-y-2">
+      <.link href={~p"/admin/dashboard"} class="block p-3 hover:bg-slate-800 rounded">Dashboard</.link>
+
+     <%= if Au4.Account.User.has_role?(@current_user, "Owner") && !Au4.Account.User.has_role?(@current_user, "Super admin") do %>  
+        <div class="p-4 space-y-2">
+      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
+      <dd class="mt-1">
+  <select 
+    name="active_apartment" 
+    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
+  >
+    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+      <option disabled selected>No Apartments Assigned</option>
+    <% else %>
+      <%= for ua <- @stats.current_user.user_apartments do %>
+      <%= if ua.role.name == "Owner" do %>
+      
+        <option value={ua.apartment.id}>
+           <%= ua.apartment.name %> <%!-- (<%= ua.role.name %>) --%>
+        </option>
+        <% end %>
+      <% end %>
+    <% end %>
+  </select>
+</dd>
+    </div> 
+    <% end %>
+
+      <%= if Au4.Account.User.has_role?(@current_user, "Super admin") || Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") do %>
+      <.link href={~p"/apartments"} class="block p-3 hover:bg-slate-800 rounded">Apartments</.link>
+      
+      <.link href={~p"/roles"} class="block p-3 hover:bg-slate-800 rounded">Roles</.link>
+      <.link href={~p"/userapartments"} class="block p-3 hover:bg-slate-800 rounded">Users</.link>
+      <% end %>
+      <.link href={~p"/view"} class="block p-3 hover:bg-slate-800 rounded">view vacant units</.link>
+       <%= if Au4.Account.User.has_role?(@current_user, "Super admin")do %>
+      <.link href={~p"/admin/users/roles"} class="block p-3 hover:bg-slate-800 rounded">Access</.link>
+      <% end %>
+
+
+      <details class="group">
+      
+        <summary class="flex items-center justify-between p-3 list-none cursor-pointer hover:bg-slate-800 rounded text-white">
+          <span>Request Monitoring</span>
+          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div class="mt-1 ml-4 space-y-1 border-l-2 border-slate-700">
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Active Requests</.link>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">History</.link>
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") || Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") do %>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">System Logs</.link>
+          <% end %>
+        </div>
+      </details>
+
+      <details class="group">
+        <summary class="flex items-center justify-between p-3 list-none cursor-pointer hover:bg-slate-800 rounded text-white">
+          <span>Services</span>
+          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div class="mt-1 ml-4 space-y-1 border-l-2 border-slate-700">
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Rent Payment</.link>
+          <.link href={~p"/view"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">House Booking</.link>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded"> Request Maintenance</.link>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Switch Request</.link>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Complaints</.link>
+          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Damage Report</.link>
+        </div>
+      </details>
+      
+    </nav>
+  </aside>
+
+  <div class="flex-1 flex flex-col">
+
+    <main class="p-8">
+      <%= @inner_content %>
+    </main>
+  </div>
+</div>

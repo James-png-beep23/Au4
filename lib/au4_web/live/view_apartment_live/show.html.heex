@@ -1,0 +1,223 @@
+<.header>
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">{@apartment.name}</h1>
+      <p class="text-gray-600 mt-1">Apartment Details</p>
+    </div>
+    <div class="hidden md:block">
+      <div class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+        <span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span>
+        Available
+      </div>
+    </div>
+  </div>
+</.header>
+
+<div class="mt-8">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Left Column - Main Content -->
+    <div class="lg:col-span-2 space-y-8">
+      <!-- Apartment Overview Card -->
+      <div class="bg-gradient-to-br from-white to-gray-50 rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Overview</h2>
+            <div class="flex items-center text-gray-600">
+              <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span class="text-lg font-medium text-gray-900">{@apartment.location}</span>
+            </div>
+          </div>
+          <div class="md:hidden">
+            <div class="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+              <span class="mr-2 h-2 w-2 rounded-full bg-green-500"></span>
+              Available
+            </div>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-4">
+            <div class="flex items-center text-gray-700">
+              <svg class="w-5 h-5 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Multiple Floors</p>
+                <p class="text-sm text-gray-600">{length(@apartment.floors)} floors available</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="flex items-center text-gray-700">
+              <svg class="w-5 h-5 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Live Updates</p>
+                <p class="text-sm text-gray-600">Real-time booking information</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floor Details Section -->
+      <div>
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold text-gray-900">Available Units</h2>
+          <div class="text-sm text-gray-500">
+            Select a unit to book
+          </div>
+        </div>
+
+        <div class="space-y-8">
+          <div :for={floor <- @apartment.floors} class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <!-- Floor Header -->
+            <div class="bg-gradient-to-r from-gray-50 to-white px-6 py-4 border-b border-gray-200">
+              <div class="flex items-center">
+                <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-600 font-bold mr-4">
+                  {floor.name}
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Floor {floor.name}</h3>
+                  <p class="text-sm text-gray-600 mt-1">
+                    {length(Enum.filter(floor.units, fn unit -> unit.user == [] end))} units available
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Units Grid -->
+            <div class="p-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div 
+                  :for={unit <- floor.units} 
+                  :if={unit.user == []} 
+                  class="group bg-gradient-to-b from-white to-gray-50 rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div class="mb-4">
+                    <div class="flex justify-between items-start mb-3">
+                      <div>
+                        <div class="flex items-center mb-2">
+                          <span class="text-lg font-bold text-gray-900">{unit.name}</span>
+                          <!-- Real-time booking badge -->
+                          <% interest_count = length(Map.get(@live_bookings, unit.id, [])) %>
+                          <span :if={interest_count > 0} class="ml-3 inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                            <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 12 12">
+                              <path d="M6 0C2.7 0 0 2.7 0 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 9c-.8 0-1.5-.7-1.5-1.5S5.2 6 6 6s1.5.7 1.5 1.5S6.8 9 6 9z"/>
+                            </svg>
+                            {interest_count} interested
+                          </span>
+                        </div>
+                        <p class="text-sm text-gray-600 line-clamp-2">{unit.description}</p>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-center text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+                      <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      <span class="line-clamp-2">{unit.description}</span>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    phx-click="book_unit"
+                    phx-value-unit-id={unit.id}
+                    class="w-full group/btn bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    <div class="flex items-center justify-center">
+                      <span>Book This Unit</span>
+                      <svg class="w-4 h-4 ml-2 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Sidebar -->
+    <div class="space-y-6">
+      <!-- Quick Stats Card -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-600">Total Floors</span>
+            <span class="text-lg font-bold text-gray-900">{length(@apartment.floors)}</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-600">Available Units</span>
+            <% 
+              total_units = @apartment.floors 
+              |> Enum.flat_map(& &1.units)
+              |> Enum.filter(&(&1.user == []))
+              |> length
+            %>
+            <span class="text-lg font-bold text-green-600">{total_units}</span>
+          </div>
+          <%!-- <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-600">Active Interest</span>
+            <span class="text-lg font-bold text-blue-600">
+              {@live_bookings |> Map.values() |> List.flatten() |> length}
+            </span>
+          </div> --%>
+        </div>
+      </div>
+
+      <!-- Booking Tips Card -->
+      <div class="bg-gradient-to-br from-blue-50 to-white rounded-2xl border border-blue-100 p-6">
+        <div class="flex items-center mb-4">
+          <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-100 text-blue-600 mr-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Booking Tips</h3>
+        </div>
+        <ul class="space-y-3">
+          <li class="flex items-start text-sm text-gray-600">
+            <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span>Click "Book This Unit" to express interest</span>
+          </li>
+          <li class="flex items-start text-sm text-gray-600">
+            <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span>The counter shows real-time interest from other users</span>
+          </li>
+          <li class="flex items-start text-sm text-gray-600">
+            <svg class="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+            <span>Units are reserved on a first-come basis</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-10 pt-6 border-t border-gray-200">
+  <button 
+    phx-click="back"
+    class="inline-flex items-center text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 group"
+  >
+    <svg class="w-5 h-5 mr-2 text-gray-400 group-hover:text-gray-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+    </svg>
+    Back to Apartments
+  </button>
+</div>

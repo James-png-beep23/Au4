@@ -1,0 +1,84 @@
+<.header>
+  Apartment {@apartment.id}
+  <:subtitle>This is an apartment record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/apartments/#{@apartment}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit apartment</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@apartment.name}</:item>
+  <:item title="Location">{@apartment.location}</:item>
+</.list>
+
+<!-- USERS -->
+<h2 class="mt-6 text-lg font-bold">Apartment Users</h2>
+
+<ul class="ml-4 list-disc">
+  <%= for user <- @apartment.users do %>
+    <li>
+      <strong><%= user.first_name %> <%= user.last_name %></strong>
+      (<%= user.email %>)
+    </li>
+  <% end %>
+
+  <%= if @apartment.users == [] do %>
+    <li>No users assigned</li>
+  <% end %>
+</ul>
+
+<!-- FLOORS & UNITS -->
+<h2 class="mt-6 text-lg font-bold">Floors</h2>
+
+<%= for floor <- @apartment.floors do %>
+  <div class="mt-4 border rounded p-3">
+    <h3 class="font-semibold">
+      Floor: <%= floor.name %>
+    </h3>
+
+    <!-- UNITS -->
+    <ul class="ml-4 list-disc">
+      <%= for unit <- floor.units do %>
+        <li class="mt-2">
+          <strong>Unit:</strong> <%= unit.name %> —
+          <%= unit.description %>
+
+          <!-- UNIT USER -->
+          <div class="ml-4 text-sm text-gray-600">
+            <%= if unit.user != [] do %>
+              Occupied by:
+              <%= for u <- unit.user do %>
+                <span>
+                  <%= u.first_name %> <%= u.last_name %>
+                  (<%= u.email %>)
+                </span>
+              <% end %>
+            <% else %>
+              Vacant
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<.back navigate={~p"/apartments"}>Back to apartments</.back>
+
+<.modal
+  :if={@live_action == :edit}
+  id="apartment-modal"
+  show
+  on_cancel={JS.patch(~p"/apartments/#{@apartment}")}>
+
+  <.live_component
+    module={Au4Web.ApartmentLive.FormComponent}
+    id={@apartment.id}
+    title={@page_title}
+    action={@live_action}
+    apartment={@apartment}
+    patch={~p"/apartments/#{@apartment}"}
+  />
+</.modal>

@@ -1,0 +1,68 @@
+
+    <div>
+      <.header>
+        {@title}
+      </.header>
+
+      <.simple_form
+        for={@form}
+        id="apartment-form"
+        phx-target={@myself}
+        phx-change="validate"
+        phx-submit="save"
+      >
+        <div class="grid grid-cols-2 gap-4">
+          <.input field={@form[:name]} label="Apartment Name" />
+          <.input field={@form[:location]} label="Location" />
+        </div>
+
+        <hr class="my-6" />
+
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold">Floors</h3>
+            <button type="button" phx-click="add-floor" phx-target={@myself} class="bg-black text-white px-3 py-1 text-sm rounded">
+              + Add Floor
+            </button>
+          </div>
+
+          <.inputs_for :let={f_form} field={@form[:floors]}>
+            <div class="p-4 border rounded-lg bg-gray-50 relative">
+              <button type="button" phx-click="remove-floor" phx-target={@myself} phx-value-index={f_form.index} class="absolute top-2 right-2 text-red-500">&times;</button>
+            
+              <input type="hidden" name={f_form[:id].name} value={f_form[:id].value} />
+              <.input field={f_form[:name]} type="text" label="Floor name" />
+
+              <div class="mt-4 ml-6">
+                <div class="flex justify-between items-center mb-2">
+                  <h4 class="text-sm font-semibold">units on this floor</h4>
+                  <button type="button" phx-click="add-unit" phx-target={@myself} phx-value-floor-index={f_form.index} class="text-xs border px-2 py-1 rounded">
+                    + Add unit
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                  <.inputs_for :let={r_form} field={f_form[:units]}>
+                    <div class="flex items-center gap-2 border p-2 rounded bg-white">
+                    <input type="hidden" name={r_form[:id].name} value={r_form[:id].value} />
+                    <%!-- <.inputs_for :let={u_form} field={r_form[:user]}>
+                    <input type="hidden" name={u_form[:id].name} value={u_form[:id].value} />
+                  </.inputs_for> --%>
+                      <.input field={r_form[:name]} placeholder="unit Name" />
+                      <.input field={r_form[:description]} type="text" placeholder="description" />
+                      <.input field={r_form[:booking]} type="text" value={"none"} placeholder="booking status" />
+                      <button type="button" phx-click="remove-unit" phx-target={@myself} phx-value-floor-index={f_form.index} phx-value-unit-index={r_form.index} class="text-red-400">&times;</button>
+                    </div>
+                  </.inputs_for>
+                </div>
+              </div>
+            </div>
+          </.inputs_for>
+        </div>
+
+        <:actions>
+          <.button phx-disable-with="Saving...">Save Apartment Complex</.button>
+        </:actions>
+      </.simple_form>
+    </div>
+ 

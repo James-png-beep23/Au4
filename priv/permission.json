@@ -1,0 +1,31 @@
+[
+  {
+    "name": "view_dashboard",
+    "description": "Allows users to view the main analytics dashboard"
+  },
+  {
+    "name": "manage_users",
+    "description": "Allows creating, editing, and deleting system users"
+  },
+   {
+    "name": "create_user",
+    "description": "Allows creating, editing, and deleting  users"
+  },
+   {
+    "name": "create_useqwer",
+    "description": "Allows creating, editing, and deleting  users"
+  },
+
+   {
+    "name": "create_user1212",
+    "description": "Allows creating, editing, and deleting  users"
+  },
+    {
+    "name": "create_user122",
+    "description": "Allows creating, editing, and deleting  users"
+  },
+  {
+    "name": "edit_settings2",
+    "description": "Allows changing application-wide configuration"
+  }
+]

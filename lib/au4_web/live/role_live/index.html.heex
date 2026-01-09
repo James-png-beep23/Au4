@@ -1,0 +1,61 @@
+<.header>
+  Listing Roles
+  <:actions>
+   <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+    <.link patch={~p"/roles/new"}>
+      <.button>New Role</.button>
+    </.link>
+    <% end %>
+  </:actions>
+</.header>
+
+<.table
+  id="roles"
+  rows={@streams.roles}
+  row_click={fn {_id, role} -> JS.navigate(~p"/roles/#{role}") end}
+>
+  <:col :let={{_id, role}} label="Name">{role.name}</:col>
+<:col :let={{_id, role}} label="Permissions">
+  <%= if Enum.empty?(role.permissions) do %>
+    <span class="text-zinc-400 italic text-xs">None</span>
+  <% else %>
+    <%= for permission <- role.permissions do %>
+      <span class="inline-block bg-zinc-100 text-zinc-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
+        <%= permission.name %>
+      </span>
+    <% end %>
+  <% end %>
+</:col>
+  <:action :let={{_id, role}}>
+    <div class="sr-only">
+      <.link navigate={~p"/roles/#{role}"}>Show</.link>
+    </div>
+      <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+    <.link patch={~p"/roles/#{role}/edit"}>Edit</.link>
+  <% end %>
+  </:action>
+  <:action :let={{id, role}}>
+    <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+    <.link
+      phx-click={JS.push("delete", value: %{id: role.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+    <% end %>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="role-modal" show on_cancel={JS.patch(~p"/roles")}>
+  <.live_component
+    module={Au4Web.RoleLive.FormComponent}
+    id={@role.id || :new}
+    title={@page_title}
+    action={@live_action}
+    role={@role}
+    patch={~p"/roles"}
+  />
+</.modal>

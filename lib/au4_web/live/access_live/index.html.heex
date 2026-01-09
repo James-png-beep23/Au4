@@ -1,0 +1,41 @@
+
+    <div class="p-6">
+      <h1 class="text-2xl font-bold mb-4">Assign User Roles</h1>
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="border-b">
+            <th class="text-left p-2">User</th>
+            <%= for role <- @roles do %>
+             <%= if role.name in ["support", "Super admin", "backend_user"] do %>
+              <th class="p-2"><%= role.name %></th>
+            <% end %>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <%= for user <- @users do %>
+            <tr class="border-b">
+              <td class="p-2">
+                <div class="font-medium"><%= user.first_name %> <%= user.last_name %></div>
+                <div class="text-sm text-gray-500"><%= user.email %></div>
+              </td>
+              <%= for role <- @roles do %>
+              <%= if role.name in ["support", "Super admin", "backend_user"] do %>
+                <td class="text-center p-2">
+                  <input
+                    type="checkbox"
+                    checked={Enum.any?(user.roles, fn r -> r.id == role.id end)}
+                    phx-click="toggle_role"
+                    phx-value-user_id={user.id}
+                    phx-value-role_id={role.id}
+                    class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                  />
+                </td>
+                <% end %>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
