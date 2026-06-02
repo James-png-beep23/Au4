@@ -1,31 +1,31 @@
 [
   {
-    "name": "view_dashboard",
+    "name": "view dashboard",
     "description": "Allows users to view the main analytics dashboard"
   },
   {
-    "name": "manage_users",
+    "name": "manage users",
     "description": "Allows creating, editing, and deleting system users"
   },
    {
-    "name": "create_user",
+    "name": "create user",
     "description": "Allows creating, editing, and deleting  users"
   },
    {
-    "name": "create_useqwer",
-    "description": "Allows creating, editing, and deleting  users"
+    "name": "create roles",
+    "description": "Allows creating, editing, and deleting  roles"
   },
 
    {
-    "name": "create_user1212",
-    "description": "Allows creating, editing, and deleting  users"
+    "name": "assign permissions",
+    "description": "Allows assigning permissions to users and roles"
   },
     {
-    "name": "create_user122",
-    "description": "Allows creating, editing, and deleting  users"
+    "name": "assign roles",
+    "description": "Allows assigning roles to users"
   },
   {
-    "name": "edit_settings2",
+    "name": "edit roles",
     "description": "Allows changing application-wide configuration"
   }
 ]

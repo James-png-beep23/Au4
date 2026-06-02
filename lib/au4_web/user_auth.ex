@@ -175,11 +175,22 @@ defmodule Au4Web.UserAuth do
   end
 
 
+  # def on_mount(:ensure_owner, _params, session, socket) do
+  #   socket = mount_current_user(socket, session)
+  #   user = socket.assigns.current_user
+
+  #   if user && Au4.Account.has_role?(user, "Owner") do
+  #     {:cont, socket}
+  #   else
+  #     {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
+  #   end
+  # end
+
   def on_mount(:ensure_owner, _params, session, socket) do
     socket = mount_current_user(socket, session)
     user = socket.assigns.current_user
 
-    if user && Au4.Account.has_role?(user, "Owner") do
+    if user && is_admin?(user) do
       {:cont, socket}
     else
       {:halt, Phoenix.LiveView.redirect(socket, to: ~p"/")}
@@ -238,8 +249,7 @@ defmodule Au4Web.UserAuth do
   defp maybe_store_return_to(conn), do: conn
 
   def require_owner_role(conn, _opts) do
-  if conn.assigns[:current_user] && Au4.Account.has_role?(conn.assigns[:current_user], "Super admin") || conn.assigns[:current_user] && Au4.Account.has_role?(conn.assigns[:current_user], "Owner")
-  || conn.assigns[:current_user] && Au4.Account.has_role?(conn.assigns[:current_user], "backend_user") || conn.assigns[:current_user] && Au4.Account.has_role?(conn.assigns[:current_user], "support") do
+  if conn.assigns[:current_user] && is_admin?(conn.assigns[:current_user]) do
     conn
   else
     conn
@@ -250,4 +260,14 @@ defmodule Au4Web.UserAuth do
 end
 
   defp signed_in_path(_conn), do: ~p"/"
+
+
+  defp is_admin?(nil), do: false
+  defp is_admin?(user) do
+    Account.has_role?(user, "Super admin") ||
+    Account.has_role?(user, "Owner") ||
+    Account.has_role?(user, "backend_user") ||
+    Account.has_role?(user, "support") ||
+    Account.has_role?(user, "Tenant")
+  end
 end

@@ -1,8 +1,9 @@
 <.header>
   Listing Roles
   <:actions>
-   <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
-         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+   <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
+         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %> --%>
+   <%= if Au4.Account.is_admin?(@current_user) do %>
     <.link patch={~p"/roles/new"}>
       <.button>New Role</.button>
     </.link>
@@ -31,14 +32,16 @@
     <div class="sr-only">
       <.link navigate={~p"/roles/#{role}"}>Show</.link>
     </div>
-      <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
-         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+      <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Owner") or 
+         Au4.Account.User.has_role?(@current_user, "Super Admin") do %> --%>
+        <%= if Au4.Account.is_admin?(@current_user) do %>
     <.link patch={~p"/roles/#{role}/edit"}>Edit</.link>
   <% end %>
   </:action>
   <:action :let={{id, role}}>
-    <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
-         Au4.Account.User.has_permission?(@current_user, "create_useqwer") do %>
+    <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Owner") or 
+         Au4.Account.User.has_role?(@current_user, "Super Admin") do %> --%>
+         <%= if Au4.Account.is_admin?(@current_user) do %>
     <.link
       phx-click={JS.push("delete", value: %{id: role.id}) |> hide("##{id}")}
       data-confirm="Are you sure?"

@@ -6,8 +6,36 @@ defmodule Au4Web.ApartmentLive.Index do
 
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, stream(socket, :apartments, Context.list_apartments())}
+
+     apartments = Context.list_apartments()
+
+    {:ok,
+       socket
+          |> assign(:all_apartments, apartments)
+          |> stream(:apartments, apartments)
+          |> assign(:search, "")}
+
   end
+
+ def handle_event("search", %{"search" => search}, socket) do
+      all_apartments = socket.assigns.all_apartments
+      term = String.downcase(search || "")
+
+      filtered =
+        Enum.filter(all_apartments, fn apartment ->
+          name = String.downcase(apartment.name || "")
+          location = String.downcase(apartment.location || "")
+
+          String.contains?(name, term) or
+          String.contains?(location, term)
+        end)
+
+      {:noreply,
+      socket
+      |> assign(:search, search)
+      |> stream(:apartments, filtered, reset: true)} # ✅ IMPORTANT
+    end
+
 
   @impl true
   def handle_params(params, _url, socket) do

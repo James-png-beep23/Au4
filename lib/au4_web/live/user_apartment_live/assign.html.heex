@@ -18,6 +18,7 @@
     <%!-- Role Selection --%>
     <div>
       <label class="block text-sm font-medium text-gray-700">Assign as...</label>
+
       <select name="role_name" required class="mt-1 block w-full rounded-md border-gray-300">
         <option value="">Choose role...</option>
         <%= for role <- @roles do %>
@@ -42,27 +43,34 @@
         </select>
       </div>
 
-      <%!-- Conditional Unit Selection (Only shows if Floor is picked) --%>
-      <%= if @selected_floor not in ["", nil] do %>
-        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
-          <label class="block text-sm font-medium text-blue-800 font-bold">Select Unit</label>
-          <select name="unit_id" class="mt-1 block w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
-            <option value="">Whole Floor (Maintenance Only)</option>
-            <%= for floor <- @apartment.floors, to_string(floor.id) == to_string(@selected_floor) do %>
-              <%= for unit <- floor.units do %>
-                <option value={unit.id} selected={to_string(unit.id) == to_string(@selected_unit)}>
-                  Unit <%= unit.name %>
-                </option>
-              <% end %>
-            <% end %>
-          </select>
-          <p class="text-xs text-blue-600 mt-2 italic">Showing units for the selected floor.</p>
-        </div>
-      <% end %>
+        <%= if @selected_floor not in ["", nil] do %>
+          <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
+            <label class="block text-sm font-medium text-blue-800 font-bold">Select Unit</label>
+            <select name="unit_id" class="mt-1 block w-full rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Choose an available unit...</option>
+
+              <%= for floor <- @apartment.floors, to_string(floor.id) == to_string(@selected_floor) do %>
+                  <%!-- Filter for units where the user list is empty --%>
+                  <%= for unit <- floor.units, is_list(unit.user) and length(unit.user) == 0 do %>
+                  <pre class="text-xs"><%= inspect(unit.user) %></pre>
+                    <option value={unit.id} selected={to_string(unit.id) == to_string(@selected_unit)}>
+                      Unit <%= unit.name %>
+                    </option>
+                  <% end %>
+                <% end %>
+            </select>
+            
+            <p class="text-xs text-blue-600 mt-2 italic">
+              Only showing vacant units for the selected floor.
+            </p>
+          </div>
+        <% end %>
     <% end %>
 
     <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition font-bold">
       Confirm Assignment
     </button>
+
+    
   </.form>
 </div>

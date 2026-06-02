@@ -1,6 +1,32 @@
 <.header>
   Listing Apartments
   <:actions>
+
+    <!-- 🔍 Search Bar -->
+<div class="mb-4">
+  <form phx-change="search" class="flex flex-col sm:flex-row gap-2">
+    
+    <input
+      type="text"
+      name="search"
+      value={@search}
+      placeholder="apartment name, location..."
+      phx-debounce="300"
+      class="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    />
+
+    <!-- Clear Button -->
+    <button
+      type="button"
+      phx-click="search"
+      phx-value-search=""
+      class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+    >
+      Clear
+    </button>
+
+  </form>
+</div>
     <%!-- Check permission to show the New button --%>
 <%= if Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") || Au4.Account.User.has_role?(@current_user, "Super admin")  do %>
       <.link patch={~p"/apartments/new"}>
@@ -24,7 +50,7 @@
         navigate={~p"/apartments/#{apartment.id}/assign_member"} 
         class="text-blue-600 font-semibold hover:text-blue-800"
       >
-        Assign Member
+        Member
       </.link>
       <div class="sr-only">
         <.link navigate={~p"/apartments/#{apartment}"}>Show</.link>

@@ -1,198 +1,604 @@
- <%= if Au4.Account.User.has_role?(@current_user, "Owner") and 
-         Au4.Account.User.has_permission?(@current_user, "create_useqwer") and
-          !Au4.Account.User.has_role?(@current_user, "Super admin")do %>
-<div class="space-y-8">
-  <h1 class="text-2xl font-bold text-gray-900">Owner Overview</h1>
-
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Total Apartments</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
-    </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
-    </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
-      <dd class="mt-1">
-  <select 
-    name="active_apartment" 
-    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
-  >
-    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
-      <option disabled selected>No Apartments Assigned</option>
-    <% else %>
-      <%= for ua <- @stats.current_user.user_apartments do %>
-      <%= if ua.role.name == "Owner" do %>
-      
-        <option value={ua.apartment.id}>
-           <%= ua.apartment.name %> <%!-- (<%= ua.role.name %>) --%>
-        </option>
-        <% end %>
-      <% end %>
-    <% end %>
-  </select>
-</dd>
-    </div>
-  </div>
-
-  <div class="bg-white shadow border rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Role</th>
-
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <%= for user <- @users do %>
-          <tr>
-            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
-            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
-           <td class="px-6 py-4 text-sm text-gray-500">
-            <%= for ua <- user.user_apartments do %>
-              <div><%= ua.role.name %></div>
+<%= if Au4.Account.User.has_role?(@current_user, "Owner" ) do %>
+    <div class="flex justify-end">
+        <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant" ) do %> <a href={~p"/portal/dashboard"}
+                class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+                Tenant Portal </a>
             <% end %>
-          </td>
+    </div>
+   <div class="space-y-6"> 
 
-          </tr>
-        <% end %>
-      </tbody> 
-    </table>
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+
+    <div>
+      <h2 class="text-3xl font-bold text-slate-900">
+        Owner Overview
+      </h2>
+
+      <p class="text-slate-500 mt-1">
+        Manage your portfolio and resident directories.
+      </p>
+    </div>
+
+    <!-- Apartment Selector -->
+    <div class="w-full md:w-72">
+
+      <label class="block text-sm text-slate-500 mb-2">
+        Select Apartment
+      </label>
+
+      <div class="relative">
+
+       <form method="get" action={~p"/admin/dashboard"}> <select name="active_apartment"
+                            onchange="this.form.submit()" debounce="500"
+                            class="block w-full rounded-md border-gray-300 py-2 text-green-600 font-bold">
+                            <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+                                <option disabled selected>No Apartments Assigned</option>
+                                <% else %>
+                                    <%= for ua <- @stats.current_user.user_apartments do %> <%!-- <%=if
+                                            Au4.Account.User.has_apartment?(@stats.apartments.id,
+                                            @stats.current_user.id) do %> --%> <%= if ua.role.name=="Owner" do %>
+                                                <option value={ua.apartment.id}
+                                                    selected={ua.apartment.id==@selected_apartment_id}>
+                                                    <%= ua.apartment.name %>
+                                                </option>
+                                                <% end %>
+                                                    <% end %>
+                                                        <% end %>
+                        </select> </form>
+
+        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+          expand_more
+        </span>
+
+      </div>
+    </div>
+
   </div>
-</div>
-<% end %>
 
- <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
-         <%!-- Au4.Account.User.has_permission?(@current_user, "create_useqwer") --%>
-<div class="space-y-8">
-  <h1 class="text-2xl font-bold text-gray-900">Super admin Overview</h1>
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Total Apartments</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
+    <!-- Apartment Card -->
+    <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+
+      <div class="flex items-start justify-between">
+
+        <div>
+          <p class="text-sm text-slate-500 mb-1">
+            Total Apartments
+          </p>
+
+          <h3 class="text-2xl font-bold text-emerald-700">
+                                <%= @stats.primary_apartment_name %>
+
+          </h3>
+        </div>
+
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+
+          <span class="material-symbols-outlined text-indigo-700">
+            domain
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="mt-6 flex items-center gap-3">
+
+        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+          Primary Asset
+        </span>
+
+        <span class="text-sm text-slate-500">
+          Active Status
+        </span>
+
+      </div>
+
+      <div class="absolute -bottom-5 -right-5 opacity-5">
+        <span class="material-symbols-outlined text-[120px]">
+          apartment
+        </span>
+      </div>
+
     </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
+
+    <!-- Residents Card -->
+    <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+
+      <div class="flex items-start justify-between">
+
+        <div>
+          <p class="text-sm text-slate-500 mb-1">
+            Total Residents
+          </p>
+
+          <h3 class="text-3xl font-bold text-emerald-700">
+            <%= @stats.total_users %>
+          </h3>
+        </div>
+
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+
+          <span class="material-symbols-outlined text-indigo-700">
+            groups
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="mt-6 flex items-center gap-2 text-emerald-700 text-sm font-medium">
+
+        <span class="material-symbols-outlined text-sm">
+          trending_up
+        </span>
+
+        <span>+12% this month</span>
+
+      </div>
+
+      <div class="absolute -bottom-5 -right-5 opacity-5">
+        <span class="material-symbols-outlined text-[120px]">
+          person_pin_circle
+        </span>
+      </div>
+
     </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Verified Accounts</dt>
-      <dd class="mt-1">
-    <select
-      name="active_apartment"
-      class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10
-            text-base font-bold text-green-600 focus:border-green-500
-            focus:outline-none focus:ring-green-500 sm:text-sm"
-    >
-      <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
-        <%= for apartment <- @apartments do %>
-          <option value={apartment.id}><%= apartment.name %></option>
-        <% end %>
-      <% else %>
-        <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
-          <option disabled selected>No Apartments Assigned</option>
-        <% else %>
-          <%= for ua <- @stats.current_user.user_apartments do %>
-            <option value={ua.apartment.id}><%= ua.apartment.name %></option>
+
+  </div>
+
+  <!-- Directory -->
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+
+    <!-- Directory Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 p-6">
+
+      <div>
+
+        <h3 class="text-2xl font-bold text-slate-900">
+          Owner Directory
+        </h3>
+
+        <p class="text-sm text-slate-500 mt-1">
+          Directory of stakeholders for the selected property
+        </p>
+
+      </div>
+
+      <div class="flex items-center gap-2">
+
+        <button class="w-11 h-11 rounded-xl border border-slate-300 flex items-center justify-center hover:bg-slate-100 transition-all">
+
+          <span class="material-symbols-outlined text-slate-500">
+            filter_list
+          </span>
+
+        </button>
+
+        <button class="px-4 py-3 rounded-xl bg-emerald-100 text-emerald-700 font-semibold hover:bg-emerald-200 transition-all">
+
+          Export CSV
+
+        </button>
+
+      </div>
+
+    </div>
+
+    
+    <!-- Directory Rows -->
+    <div class="divide-y divide-slate-100">
+
+  <%= for user <- @users do %>
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-all">
+
+      <!-- User -->
+      <div class="flex items-center gap-4 flex-1">
+
+        <div>
+          <p class="font-semibold text-slate-900">
+            <%= user.first_name %> <%= user.last_name %>
+          </p>
+
+          <p class="text-sm text-slate-500">
+            <%= user.email %>
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Role -->
+      <div>
+        <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+
+          <%= for ua <- user.user_apartments do %>
+            <%= if ua.apartment_id == @selected_apartment_id do %>
+              <%= ua.role.name %>
+            <% end %>
           <% end %>
-        <% end %>
-      <% end %>
-    </select>
 
-</dd>
+        </span>
+      </div>
+
+      <!-- Actions -->
+      <button class="text-slate-500 hover:text-emerald-700 transition-all">
+        <span class="material-symbols-outlined">
+          more_vert
+        </span>
+      </button>
+
     </div>
-  </div>
 
-  <div class="bg-white shadow border rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Role</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <%= for user <- @users do %>
-          <tr>
-            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
-            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
-            <td class="px-6 py-4 text-sm text-gray-500">
-            <%= for ua <- user.user_apartments do %>
-              <div><%= ua.role.name %> </div>
-            <% end %>
+  <% end %>
 
-            <%= for ua <- user.roles do %>
-              <div><%= ua.name %> </div>
-            <% end %>
+</div>  
 
+    
 
-          </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </div>
 </div>
-<% end %>
 
- <%= if Au4.Account.User.has_role?(@current_user, "tenant") and 
-         Au4.Account.User.has_permission?(@current_user, "create_useqwer")do %>
-<div class="space-y-8">
-  <h1 class="text-2xl font-bold text-gray-900">Tenant Overview</h1>
+    <!-- Footer -->
+    <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 text-center">
 
-  <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_apartments %></dd>
+      <button class="text-emerald-700 font-semibold hover:underline">
+
+        View All Directory Entries
+
+      </button>
+
     </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Total resident</dt>
-      <dd class="mt-1 text-3xl font-bold text-indigo-600"><%= @stats.total_users %></dd>
+
+
+
+  <!-- Floating Button -->
+  <div class="fixed bottom-24 right-6 md:bottom-10 md:right-10">
+
+    <button class="w-14 h-14 rounded-full bg-emerald-700 text-white shadow-xl flex items-center justify-center hover:scale-105 transition-all">
+
+      <span class="material-symbols-outlined text-3xl">
+        add
+      </span>
+
+    </button>
+
+  </div>
+
+</div>
+    <% end %> 
+
+    <!-- Super admin view -->
+        <%= if Au4.Account.User.has_role?(@current_user, "Super admin" ) do %>
+         <div class="space-y-6">
+
+  <!-- Hero Section -->
+  <div class="space-y-1">
+    <h2 class="text-3xl font-bold text-slate-900">
+      Super Admin Overview
+    </h2>
+
+    <p class="text-slate-500">
+      Global Portfolio Management Control Center
+    </p>
+  </div>
+
+  <!-- Action Buttons -->
+  
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+     <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant" ) do %>
+   <a href={~p"/portal/dashboard"} >
+    <div class="bg-emerald-700 text-white rounded-xl p-4 shadow-sm flex items-center justify-center gap-3 cursor-pointer hover:opacity-90 transition-all">
+      <span class="material-symbols-outlined">
+        corporate_fare
+      </span>
+
+      <span class="font-semibold">
+        Tenant Portal
+      </span>
     </div>
-    <div class="bg-white p-6 shadow rounded-lg border">
-      <dt class="text-sm font-medium text-gray-500">Verified Accounts</dt>
-      <dd class="mt-1">
-  <select 
-    name="active_apartment" 
-    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
-  >
-    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
-      <option disabled selected>No Apartments Assigned</option>
-    <% else %>
-      <%= for ua <- @stats.current_user.user_apartments do %>
-        <option value={ua.apartment.id}>
-         <%= ua.apartment.name %>   <%!-- (<%= ua.role.name %>) --%>
-        </option>
-      <% end %>
+    </a>
     <% end %>
-  </select>
-</dd>
+     <%= if @current_user && Au4.Account.has_role?(@current_user, "Owner" ) do %> <a
+                                    href={~p"/portal/dashboard"} >
+    <div class="bg-indigo-100 text-indigo-700 rounded-xl p-4 shadow-sm flex items-center justify-center gap-3 cursor-pointer hover:opacity-90 transition-all">
+      <span class="material-symbols-outlined">
+        supervisor_account
+      </span>
+
+      <span class="font-semibold">
+        Owner Portal
+      </span>
     </div>
+     </a>
+    <% end %>
+
   </div>
 
-  <div class="bg-white shadow border rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-300">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
-          <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <%= for user <- @users do %>
-          <tr>
-            <td class="px-6 py-4 text-sm text-gray-900"><%= user.first_name %> <%= user.last_name %></td>
-            <td class="px-6 py-4 text-sm text-gray-500"><%= user.email %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Apartments -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm font-medium text-slate-500">
+          Total Apartments
+        </p>
+
+        <span class="material-symbols-outlined text-slate-400">
+          apartment
+        </span>
+      </div>
+
+      <h3 class="text-4xl font-bold text-slate-800">
+        <%= @stats.total_apartments %>
+      </h3>
+
+      <div class="mt-2 flex items-center gap-1 text-emerald-700 text-sm">
+        <span class="material-symbols-outlined text-sm">
+          trending_up
+        </span>
+
+        <span>+12% from last month</span>
+      </div>
+    </div>
+
+    <!-- Residents -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm font-medium text-slate-500">
+          Total Residents
+        </p>
+
+        <span class="material-symbols-outlined text-slate-400">
+          groups
+        </span>
+      </div>
+
+      <h3 class="text-4xl font-bold text-slate-800">
+       <%= @stats.total_users %>
+      </h3>
+
+      <div class="mt-2 flex items-center gap-1 text-emerald-700 text-sm">
+        <span class="material-symbols-outlined text-sm">
+          trending_up
+        </span>
+
+        <span>+5.4% new lease-ups</span>
+      </div>
+    </div>
+
+    <!-- Verified -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm font-medium text-slate-500">
+          Verified Accounts
+        </p>
+
+        <span class="material-symbols-outlined text-emerald-700">
+          verified
+        </span>
+      </div>
+
+      <div class="relative mb-4">
+      <form method="get" action={~p"/admin/dashboard"}> <select name="active_apartment"
+                                    onchange="this.form.submit()" debounce="500"
+                                    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm">
+                                    <%= if Au4.Account.User.has_role?(@current_user, "Super admin" ) do %>
+                                        <%= for apartment <- @apartments do %>
+                                            <option value={apartment.id}
+                                                selected={apartment.id==@selected_apartment_id}>
+                                                <%= apartment.name %>
+                                            </option>
+                                            <% end %>
+                                                <% else %>
+                                                    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+                                                        <option disabled selected>No Apartments Assigned</option>
+                                                        <% else %>
+                                                            <%= for ua <- @stats.current_user.user_apartments do %>
+                                                                <option value={ua.apartment.id}>
+                                                                    <%= ua.apartment.name %>
+                                                                </option>
+                                                                <% end %>
+                                                                    <% end %>
+                                                                        <% end %>
+                                </select> </form>
+      </div>
+
+      
+    </div>
+
   </div>
+
+  <!-- User Directory -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-slate-200 p-6">
+
+      <div>
+        <h3 class="text-xl font-bold text-slate-900">
+          User Directory
+        </h3>
+
+        <p class="text-sm text-slate-500">
+          Manage apartment users and permissions
+        </p>
+      </div>
+
+      <button class="text-emerald-700 font-semibold hover:underline">
+        View All
+      </button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+
+      <div class="min-w-[700px]">
+
+        <!-- Table Header -->
+        <div class="grid grid-cols-4 bg-slate-100 px-6 py-4 text-sm font-semibold text-slate-500">
+
+          <div>Name</div>
+          <div>Apartment</div>
+          <div>Email</div>
+          <div>Role</div>
+
+        </div>
+
+      
+       
+
+        <!-- Row -->
+        <div class="grid grid-cols-4 items-center px-6 py-4 border-t border-slate-100 hover:bg-slate-50 transition-all">
+
+            <%= for user <- @users do %>
+                                <%= if Enum.any?(user.roles, fn role -> role.name == "Owner" end) or
+                                    Enum.any?(user.user_apartments, fn ua -> ua.role.name == "Owner" end) do %> <tr>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            <%= user.first_name %>
+                                                <%= user.last_name %>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-900">
+                                            <%= for ua <- user.user_apartments do %>
+                                                <%= if ua.apartment_id==@selected_apartment_id do %>
+                                                    <div>
+                                                        <%= ua.apartment.name %>
+                                                    </div>
+                                                    <% end %>
+                                                        <% end %>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            <%= user.email %>
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            <%= for ua <- user.user_apartments do %>
+                                                <%= if ua.apartment_id==@selected_apartment_id do %>
+                                                    <div>
+                                                        <%= ua.role.name %>
+                                                    </div>
+                                                    <% end %>
+                                                        <% end %>
+                                                            <%= for ua <- user.roles do %>
+                                                                <div>
+                                                                    <%= ua.name %>
+                                                                </div>
+                                                                <% end %>
+                                        </td>
+                                    </tr>
+                                    <% end %>
+                                        <% end %>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fixed bottom-24 right-6">
+
+    <button class="w-14 h-14 rounded-full bg-emerald-700 text-white shadow-xl flex items-center justify-center hover:scale-105 transition-all">
+
+      <span class="material-symbols-outlined">
+        add
+      </span>
+
+    </button>
+
+  </div>
+
 </div>
-<% end %>
+            <% end %>
+             <!-- Tenant view -->
+                <%= if Au4.Account.User.has_role?(@current_user, "Tenant" ) && !Au4.Account.is_admin?(@current_user) do
+                    %>
+                    <div class="space-y-8">
+                        <h1 class="text-2xl font-bold text-gray-900">Tenant Overview</h1>
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+                            <div class="bg-white p-6 shadow rounded-lg border">
+                                <dt class="text-sm font-medium text-gray-500">Apartments</dt>
+                                <dd class="mt-1 text-lg font-bold text-indigo-600">
+                                    <%= @stats.primary_apartment_name %>
+                                </dd>
+                            </div>
+                            <div class="bg-white p-6 shadow rounded-lg border">
+                                <dt class="text-sm font-medium text-gray-500">Name</dt>
+                                <dd class="mt-1 text-2xl font-bold text-indigo-600"> <%!-- FIXED: Access the field, not
+                                        the whole struct --%>
+                                        <%= @stats.current_user.first_name %>
+                                            <%= @stats.current_user.last_name %>
+                                </dd>
+                            </div>
+                            <div class="bg-white p-6 shadow rounded-lg border">
+                                <dt class="text-sm font-medium text-gray-500">Total resident</dt>
+                                <dd class="mt-1 text-3xl font-bold text-indigo-600">
+                                    <%= @stats.total_users %>
+                                </dd>
+                            </div>
+                            <div class="bg-white p-6 shadow rounded-lg border">
+                                <dt class="text-sm font-medium text-gray-500">Request</dt>
+                                <dd class="mt-1 text-3xl font-bold text-indigo-600">
+                                    <%= for reqs <- @stats.total_requests do %>
+                                        <%= for r <- reqs do %>
+                                            <div class="request">
+                                                <p><strong>Type:</strong>
+                                                    <%= r.request_type %>
+                                                </p>
+                                                <p><strong>Description:</strong>
+                                                    <%= r.description %>
+                                                </p>
+                                                <p><strong>Status:</strong>
+                                                    <%= r.status %>
+                                                </p>
+                                            </div>
+                                            <% end %>
+                                                <% end %> <%!-- <dd class="mt-1 text-3xl font-bold text-indigo-600">
+                                                        --%> <%!-- COMMING SOON --%>
+                                </dd>
+                            </div>
+                        </div> <%!-- <div class="bg-white shadow border rounded-lg overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-300">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Phone Number
+                                        </th>
+                                        <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Unit Number
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <%= for user <- @users do %>
+                                        <tr>
+                                            <td class="px-6 py-4 text-sm text-gray-900">
+                                                <%= user.first_name %>
+                                                    <%= user.last_name %>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500">
+                                                <%= user.email %>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500">
+                                                <%= user.phone_number %>
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500"> <%!-- Since a user might have
+                                                    multiple apartments, we list the units they occupy --%> <%!-- %>
+                                                        <%= for ua <- user.user_apartments do %> <span
+                                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mr-1">
+                                                                <%= ua.unit_id || "N/A" %>
+                                                            </span>
+                                                            <% end %>
+                                            </td>
+                                        </tr>
+                                        <% end %>
+                                </tbody>
+                            </table>
+                    </div> --%> </div>
+                    <% end %>

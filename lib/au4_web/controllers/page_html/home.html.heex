@@ -559,40 +559,14 @@
                     <li><a href="#contact">Contact</a></li>
                 </ul>
                 
-                <%!-- <div class="cta-buttons">
-                   <%= for role <- @roles do %>
-                        <%= if role.name == "owner" do %>
-                    <a href="/users/log_in" class="btn">Admin</a>
-                        <% end %>
-
-                         <%= if @current_user && @current_user.role == "owner" do %>
-                      <a href="/admin/dashboard" class="btn">Admin Dashboard</a>
-                    <% end %>
-                    <% end %>
-
-                   
-                    <a href="/users/log_in" class="btn btn-secondary">Log In</a>
-                </div> --%>
-
-                <%!-- <div class="cta-buttons">
-                
-                  <%= if @current_user && User.has_role?(@current_user, "owner") do %>
-                    <a href="/admin/dashboard" class="btn">Admin Dashboard</a>
-                    <% end %>
-
-                  <%= if !@current_user do %>
-                    <a href="/users/log_in" class="btn btn-secondary">Log In</a>
-                  <% else %>
-                   <.link href={~p"/users/log_out"} method="delete" class="btn btn-secondary">Log out</.link>
-                  <% end %>
-                
-                   
-                 </div>     --%>
                  <div class="cta-buttons">
                 <%!-- 1. Admin Dashboard: Only shows if user is logged in AND is an O --%>
                 <%= if @current_user && Au4.Account.has_role?(@current_user, "Super admin") || @current_user && Au4.Account.has_role?(@current_user, "Owner")
                 || @current_user && Au4.Account.has_role?(@current_user, "backend_user") || @current_user && Au4.Account.has_role?(@current_user, "support") do %>
                   <a href={~p"/admin/dashboard"} class="btn">Admin Dashboard</a>
+                <% end %>
+                 <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
+                  <a href={~p"/portal/dashboard"} class="btn">Portal</a>
                 <% end %>
 
                 <%!-- 2. Auth Toggle: Shows Log In if guest, Log Out if authenticated --%>
@@ -675,6 +649,7 @@
                     <p>Generate detailed financial reports, track expenses, and analyze property performance with insights.</p>
                 </div>
                 
+                <a href={~p"/portal/dashboard"} class="feature-card-link">
                 <div class="feature-card">
                     <div class="feature-icon">
                         <i class="fas fa-users"></i>
@@ -682,6 +657,7 @@
                     <h3>Client Portal</h3>
                     <p>Provide clients with a self-service portal to pay rent, submit requests, and communicate securely.</p>
                 </div>
+                </a>
                 
                 <div class="feature-card">
                     <div class="feature-icon">

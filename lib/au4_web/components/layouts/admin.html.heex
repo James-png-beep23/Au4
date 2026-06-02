@@ -1,90 +1,209 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>AU4 Admin</title>
 
-<div class="min-h-screen bg-gray-100 flex">
-  <aside class="w-64 bg-slate-900 text-white hidden md:block">
-    <div class="p-6 font-bold text-xl border-b border-slate-800">AU4 Admin</div>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 
-    
-    <nav class="p-4 space-y-2">
-      <.link href={~p"/admin/dashboard"} class="block p-3 hover:bg-slate-800 rounded">Dashboard</.link>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&display=swap"
+    rel="stylesheet"
+  />
 
-     <%= if Au4.Account.User.has_role?(@current_user, "Owner") && !Au4.Account.User.has_role?(@current_user, "Super admin") do %>  
-        <div class="p-4 space-y-2">
-      <dt class="text-sm font-medium text-gray-500">Apartments</dt>
-      <dd class="mt-1">
-  <select 
-    name="active_apartment" 
-    class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base font-bold text-green-600 focus:border-green-500 focus:outline-none focus:ring-green-500 sm:text-sm"
-  >
-    <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
-      <option disabled selected>No Apartments Assigned</option>
-    <% else %>
-      <%= for ua <- @stats.current_user.user_apartments do %>
-      <%= if ua.role.name == "Owner" do %>
-      
-        <option value={ua.apartment.id}>
-           <%= ua.apartment.name %> <%!-- (<%= ua.role.name %>) --%>
-        </option>
-        <% end %>
-      <% end %>
-    <% end %>
-  </select>
-</dd>
-    </div> 
-    <% end %>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet"
+  />
 
-      <%= if Au4.Account.User.has_role?(@current_user, "Super admin") || Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") do %>
-      <.link href={~p"/apartments"} class="block p-3 hover:bg-slate-800 rounded">Apartments</.link>
-      
-      <.link href={~p"/roles"} class="block p-3 hover:bg-slate-800 rounded">Roles</.link>
-      <.link href={~p"/userapartments"} class="block p-3 hover:bg-slate-800 rounded">Users</.link>
-      <% end %>
-      <.link href={~p"/view"} class="block p-3 hover:bg-slate-800 rounded">view vacant units</.link>
-       <%= if Au4.Account.User.has_role?(@current_user, "Super admin")do %>
-      <.link href={~p"/admin/users/roles"} class="block p-3 hover:bg-slate-800 rounded">Access</.link>
-      <% end %>
+  <style>
+    body {
+      font-family: 'Hanken Grotesk', sans-serif;
+      background-color: #f9f9fc;
+    }
 
+    .glass-effect {
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
 
-      <details class="group">
-      
-        <summary class="flex items-center justify-between p-3 list-none cursor-pointer hover:bg-slate-800 rounded text-white">
-          <span>Request Monitoring</span>
-          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </summary>
-        <div class="mt-1 ml-4 space-y-1 border-l-2 border-slate-700">
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Active Requests</.link>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">History</.link>
-            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") || Au4.Account.User.has_role?(@current_user, "backend_user") || Au4.Account.User.has_role?(@current_user, "support") do %>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">System Logs</.link>
-          <% end %>
-        </div>
-      </details>
+    .card-shadow {
+      box-shadow: 0px 4px 20px rgba(0,0,0,0.04);
+    }
 
-      <details class="group">
-        <summary class="flex items-center justify-between p-3 list-none cursor-pointer hover:bg-slate-800 rounded text-white">
-          <span>Services</span>
-          <svg class="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </summary>
-        <div class="mt-1 ml-4 space-y-1 border-l-2 border-slate-700">
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Rent Payment</.link>
-          <.link href={~p"/view"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">House Booking</.link>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded"> Request Maintenance</.link>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Switch Request</.link>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Complaints</.link>
-          <.link href={~p"/"} class="block px-4 py-2 hover:bg-slate-800 text-sm text-slate-300 rounded">Damage Report</.link>
-        </div>
-      </details>
-      
-    </nav>
-  </aside>
+    .sidebar-transition {
+      transition: transform 0.3s ease-in-out;
+    }
+  </style>
+</head>
 
-  <div class="flex-1 flex flex-col">
+<body class="text-on-surface overflow-x-hidden">
 
-    <main class="p-8">
-      <%= @inner_content %>
-    </main>
+<!-- Sidebar -->
+<aside
+  id="sidebar"
+  class="fixed left-0 top-0 h-full z-40 flex flex-col p-4 w-72 bg-white border-r shadow-sm sidebar-transition -translate-x-full md:translate-x-0"
+>
+  <div class="mb-10 px-2">
+    <h1 class="text-3xl font-bold text-emerald-700">
+      AU4 Admin
+    </h1>
+
+    <p class="text-sm text-slate-500 uppercase tracking-widest">
+  
+    </p>
   </div>
+
+  <nav class="flex-grow space-y-2">
+
+    <a
+      href={~p"/apartments"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg bg-emerald-100 text-emerald-700 border-l-4 border-emerald-700 font-bold"
+    >
+      <span class="material-symbols-outlined">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+
+    <a
+      href={~p"/apartments"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
+    >
+      <span class="material-symbols-outlined">apartment</span>
+      <span>Apartments</span>
+    </a>
+
+    <a
+      href={~p"/admin/users/roles"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
+    >
+      <span class="material-symbols-outlined">vpn_key</span>
+      <span>Access</span>
+    </a>
+    <a
+      href={~p"/userapartments"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
+    >
+      <span class="material-symbols-outlined">person</span>
+      <span>User</span>
+    </a>
+    <a
+      href={~p"/roles"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
+    >
+      <span class="material-symbols-outlined">admin_panel_settings</span>
+      <span>Roles</span>
+    </a>
+
+    <a
+      href={~p"/requests"}
+      class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
+    >
+      <span class="material-symbols-outlined">forum</span>
+      <span>Requests</span>
+    </a>
+  </nav>
+
+  <div class="mt-auto p-4 bg-slate-100 rounded-xl flex items-center gap-4">
+    <div class="w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center font-bold">
+      A
+    </div>
+
+    <div>
+      <p class="font-semibold">EstatePro Admin</p>
+      <p class="text-sm text-slate-500">Super Admin</p>
+    </div>
+  </div>
+</aside>
+
+<!-- Overlay -->
+<div
+  id="sidebar-overlay"
+  class="fixed inset-0 bg-black/20 z-30 hidden md:hidden"
+  onclick="toggleSidebar()"
+>
 </div>
+
+<!-- Main -->
+<main class="md:ml-72 min-h-screen">
+
+  <!-- Header -->
+  <header class="fixed top-0 right-0 w-full md:w-[calc(100%-18rem)] z-30 flex items-center justify-between h-16 bg-white border-b px-6">
+    <div class="flex items-center gap-4">
+
+      <button
+        class="md:hidden"
+        onclick="toggleSidebar()"
+      >
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+
+      <h2 class="text-2xl font-bold text-emerald-700">
+        Overview
+      </h2>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <input
+        type="text"
+        placeholder="Search tenants..."
+        class="hidden md:block border rounded-lg px-4 py-2"
+      />
+
+      <button class="bg-slate-200 px-4 py-2 rounded-full">
+        Tenant Portal
+      </button>
+    </div>
+  </header>
+
+  <!-- Dynamic Page Content -->
+  <div class="pt-24 px-6 pb-10">
+    <%= @inner_content %>
+  </div>
+</main>
+
+<!-- Mobile Bottom Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center py-2 bg-white border-t">
+
+  <a href="#" class="flex flex-col items-center text-emerald-700">
+    <span class="material-symbols-outlined">home</span>
+    <span class="text-xs">Home</span>
+  </a>
+
+  <a href="#" class="flex flex-col items-center text-slate-500">
+    <span class="material-symbols-outlined">domain</span>
+    <span class="text-xs">Units</span>
+  </a>
+
+  <a href="#" class="flex flex-col items-center text-slate-500">
+    <span class="material-symbols-outlined">lock_open</span>
+    <span class="text-xs">Keys</span>
+  </a>
+
+  <a href="#" class="flex flex-col items-center text-slate-500">
+    <span class="material-symbols-outlined">mail</span>
+    <span class="text-xs">Inbox</span>
+  </a>
+</nav>
+
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    const isOpen = sidebar.classList.contains('translate-x-0');
+
+    if (isOpen) {
+      sidebar.classList.remove('translate-x-0');
+      sidebar.classList.add('-translate-x-full');
+      overlay.classList.add('hidden');
+    } else {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+      overlay.classList.remove('hidden');
+    }
+  }
+</script>
+
+</body>
+</html>

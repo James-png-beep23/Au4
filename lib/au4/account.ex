@@ -8,6 +8,11 @@ defmodule Au4.Account do
 
   alias Au4.Account.{User, UserToken, UserNotifier}
 
+  # import Ecto.Query
+  alias Au4.Account.User
+  # alias Au4.Repo
+
+
   ## Database getters
 
  def list_users do
@@ -17,6 +22,11 @@ defmodule Au4.Account do
     user_apartments: [:role, :apartment]
   ])
 end
+
+
+
+
+
 
   @doc """
   Gets a user by email.
@@ -66,7 +76,7 @@ end
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:apartments, :roles])
+  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload([:apartment, :roles])
 
   ## User registration
 
@@ -240,7 +250,7 @@ end
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
     Repo.one(query)
-    |> Repo.preload([:roles, user_apartments: :role])
+    |> Repo.preload([:roles, user_apartments: [:role, :apartment] ])
   end
 
   @doc """
@@ -337,6 +347,20 @@ end
     end
   end
 
+  @spec reset_user_password(
+          {map(),
+           %{
+             optional(atom()) =>
+               atom()
+               | {:array | :assoc | :embed | :in | :map | :parameterized | :supertype | :try,
+                  any()}
+           }}
+          | %{
+              :__struct__ => atom() | %{:__changeset__ => any(), optional(any()) => any()},
+              optional(atom()) => any()
+            },
+          :invalid | %{optional(:__struct__) => none(), optional(atom() | binary()) => any()}
+        ) :: {:error, any()} | {:ok, any()}
   @doc """
   Resets the user password.
 
@@ -361,6 +385,7 @@ end
   end
 
     # 1. Add this clause to handle the %User{} struct directly
+
     def has_role?(%User{} = user, role_name) do
       User.has_role?(user, role_name)
     end
@@ -375,30 +400,36 @@ end
 
 
    def list_users_in_apartments(apartment_ids) when is_list(apartment_ids) do
-  import Ecto.Query
-  alias Au4.Account.User
-  alias Au4.Repo
 
-  User
-  |> join(:inner, [u], ua in assoc(u, :user_apartments))
-  |> where([u, ua], ua.apartment_id in ^apartment_ids)
-  |> distinct(true)
-  |> preload([:roles, user_apartments: :role]) # Preload so has_role? works in the view
-  |> Repo.all()
-end
+      User
+      |> join(:inner, [u], ua in assoc(u, :user_apartments))
+      |> where([u, ua], ua.apartment_id in ^apartment_ids)
+      |> distinct(true)
+      |> preload([:roles, user_apartments: :role]) # Preload so has_role? works in the view
+      |> Repo.all()
+    end
 
-# Helper for a single ID
-def list_users_in_apartments(apartment_id) when is_integer(apartment_id) do
-  list_users_in_apartments([apartment_id])
-end
+    # Helper for a single ID
+    def list_users_in_apartments(apartment_id) when is_integer(apartment_id) do
+      list_users_in_apartments([apartment_id])
+    end
 
-def list_users_by_apartment(apartment_id) do
-  from(u in User,
-    join: ua in assoc(u, :user_apartments),
-    where: ua.apartment_id == ^apartment_id,
-    distinct: u.id,
-    preload: [roles: [], user_apartments: [:role]]
-  )
-  |> Repo.all()
-end
+    def list_users_by_apartment(apartment_id) do
+      from(u in User,
+        join: ua in assoc(u, :user_apartments),
+        where: ua.apartment_id == ^apartment_id,
+        distinct: u.id,
+        preload: [roles: [], user_apartments: [:role]]
+      )
+      |> Repo.all()
+    end
+
+
+  def is_admin?(nil), do: false
+  def is_admin?(user) do
+    has_role?(user, "Super admin") ||
+    has_role?(user, "Owner") ||
+    has_role?(user, "backend_user") ||
+    has_role?(user, "support")
+  end
 end

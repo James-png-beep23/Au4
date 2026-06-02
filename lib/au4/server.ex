@@ -62,21 +62,4 @@ defmodule Au4.Server do
     {:noreply, %{state | apartment: Context.list_apartments()}}
   end
 
-  # --- Helpers for filtering ---
-
-  @doc """
-  Filters the state to find units that are 'vacant' in the DB
-  but might have multiple 'temporary bookings' in memory.
-  """
-  def handle_call({:get_available_units_for_booking, apartment_id, unit_id}, _from, state) do
-    apartment = Enum.find(state.apartment, &(&1.id == apartment_id)) || Context.get_apartment!(apartment_id)
-
-    available_units =
-      apartment.floors
-      |> Enum.flat_map(& &1.units)
-      # A unit is available for booking if its DB 'user' list is empty
-      |> Enum.filter(fn unit -> unit.id == unit_id and unit.user == [] end)
-
-    {:reply, available_units, state}
-  end
 end

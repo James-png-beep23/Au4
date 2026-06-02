@@ -1,52 +1,120 @@
-<div class="p-8">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">Global Lease & Membership Manager</h1>
-    <div class="bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm">
-      Total Active Records: <%= length(@memberships) %>
+<div class="p-4 md:p-6">
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+    <h1 class="text-xl md:text-2xl font-bold text-gray-800">Global Lease & Membership Manager</h1>
+    <div class="bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-sm font-semibold w-fit">
+      📋 Total Active Records: <%= length(@memberships) %>
     </div>
   </div>
 
-  <div class="bg-white shadow-md rounded-lg overflow-hidden">
-    <table class="w-full text-left border-collapse">
-      <thead class="bg-gray-100 uppercase text-xs font-semibold text-gray-600">
-        <tr>
-          <th class="p-4 border-b">User</th>
-          <th class="p-4 border-b">Apartment</th>
-          <th class="p-4 border-b">Unit</th>
-          <th class="p-4 border-b">Assigned Role</th>
-          <th class="p-4 border-b">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <%= for ua <- @memberships do %>
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="p-4">
-              <div class="font-medium"><%= ua.user.first_name %> <%= ua.user.last_name %></div>
-              <div class="text-xs text-gray-500"><%= ua.user.email %></div>
-            </td>
-            <td class="p-4 text-gray-700 font-bold">
-              <%= ua.apartment.name %>
-            </td>
-            <td class="p-4">
-              <%= if ua.unit do %>
-                <span class="text-indigo-600 font-semibold"><%= ua.unit.name %></span>
-              <% else %>
-                <span class="text-gray-400 italic">Entire Building (Owner/Staff)</span>
+  <!-- 🔍 Search Bar -->
+<div class="mb-4">
+  <form phx-change="search" class="flex flex-col sm:flex-row gap-2">
+    
+    <input
+      type="text"
+      name="search"
+      value={@search}
+      placeholder="Search user, email, apartment, unit..."
+      phx-debounce="300"
+      class="w-full border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+    />
+
+    <!-- Clear Button -->
+    <button
+      type="button"
+      phx-click="search"
+      phx-value-search=""
+      class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium"
+    >
+      Clear
+    </button>
+
+  </form>
+</div>
+
+  <!-- Cards Container (No horizontal scroll) -->
+  <div class="space-y-2">
+    <%= for ua <- @memberships do %>
+      <div class="bg-white border border-gray-100 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-150">
+        <!-- Main row: fits on any screen width -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 gap-2">
+          <!-- Left side: User + Apartment info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- User avatar + name -->
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-blue-700 font-semibold text-xs">
+                  <%= String.first(ua.user.first_name || "U") %>
+                </div>
+                <div>
+                  <span class="font-semibold text-gray-800 text-sm"><%= ua.user.first_name %> <%= ua.user.last_name %></span>
+                  <span class="text-xs text-gray-400 ml-1 hidden sm:inline">•</span>
+                  <span class="text-xs text-gray-400 ml-1 block sm:inline"><%= ua.user.email %></span>
+                </div>
+              </div>
+              
+              <!-- Separator dot (desktop) -->
+              <span class="text-gray-300 hidden sm:inline">•</span>
+              
+              <!-- Apartment name (bold) -->
+              <span class="font-bold text-gray-800 text-sm"><%= ua.apartment.name %></span>
+              
+              <!-- Floor (if exists) -->
+              <%= if ua.floor do %>
+                <span class="inline-flex items-center gap-0.5 text-indigo-600 text-xs bg-indigo-50 px-1.5 py-0.5 rounded">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                  </svg>
+                  <%= ua.floor.name %>
+                </span>
               <% end %>
-            </td>
-            <td class="p-4">
-              <span class={"px-3 py-1 rounded-full text-xs font-bold #{role_style(ua.role)}"}>
-                <%= if ua.role, do: String.upcase(ua.role.name), else: "PENDING" %>
-              </span>
-            </td>
-            <td class="p-4">
-              <.link navigate={~p"/apartments/#{ua.apartment.id}"} class="text-blue-500 hover:underline text-sm font-medium">
-                View Building Map →
+              
+              <!-- Unit (if exists) -->
+              <%= if ua.unit do %>
+                <span class="font-mono text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">
+                  Unit <%= ua.unit.name %>
+                </span>
+              <% else %>
+                <span class="text-gray-400 text-xs italic">Entire Building</span>
+              <% end %>
+            </div>
+          </div>
+          
+          <!-- Right side: Role + Actions -->
+          <div class="flex items-center justify-between sm:justify-end gap-3">
+            <!-- Role badge -->
+            <span class={[
+              "px-2 py-0.5 rounded-full text-xs font-bold whitespace-nowrap",
+              role_style(ua.role)
+            ]}>
+              <%= if ua.role, do: String.upcase(ua.role.name), else: "PENDING" %>
+            </span>
+            
+            <!-- Action buttons -->
+            <div class="flex items-center gap-2">
+              <.link navigate={~p"/apartments/#{ua.apartment.id}"} class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                View →
               </.link>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+              <button phx-click="delete_membership" phx-value-id={ua.id} class="text-gray-400 hover:text-red-600 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    
+    <!-- Empty state -->
+    <%= if Enum.empty?(@memberships) do %>
+      <div class="text-center py-12 bg-white rounded-lg border border-gray-100">
+        <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        <p class="text-gray-400 text-sm">No memberships found.</p>
+      </div>
+    <% end %>
   </div>
 </div>

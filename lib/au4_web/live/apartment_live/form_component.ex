@@ -1,3 +1,4 @@
+
 defmodule Au4Web.ApartmentLive.FormComponent do
   use Au4Web, :live_component
 
@@ -7,7 +8,7 @@ defmodule Au4Web.ApartmentLive.FormComponent do
 
 
   @impl true
-  @spec update(%{:apartment => any(), optional(any()) => any()}, any()) :: {:ok, map()}
+
   def update(%{apartment: apartment} = assigns, socket) do
     # When creating new, ensure we have at least one floor/unit structure
     apartment = if apartment.id, do: apartment, else: %Apartment{floors: [%Floor{units: [%Unit{}]}]}

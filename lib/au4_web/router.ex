@@ -18,8 +18,8 @@ defmodule Au4Web.Router do
   end
 
   pipeline :owner_only do
-    plug :require_authenticated_user
-    plug :require_owner_role
+    plug :require_authenticated_user #plug to ensure the user is authenticated
+    plug :require_owner_role # plug to ensure the user has the "Owner" role
   end
 
   scope "/", Au4Web do
@@ -96,14 +96,22 @@ defmodule Au4Web.Router do
 
       live "/view", ViewApartmentLive.Index, :index
       live "/view/:id", ViewApartmentLive.Show, :show
+      live "/requests", RequestLive.Index, :index
 
        live "/admin/users/roles", AccessLive.Index, :index
+
 
 
       scope "/admin" do
       pipe_through [:owner_only]
       get "/dashboard", AdminController, :index
-    end
+
+      end
+
+      scope "/portal" do
+      pipe_through [:owner_only]
+      get "/dashboard", AdminController, :index
+     end
     end
   end
 
@@ -111,7 +119,9 @@ defmodule Au4Web.Router do
     on_mount: [{Au4Web.UserAuth, :ensure_owner}],
     layout: {Au4Web.Layouts, :admin} do # This applies the layout to all LiveViews in this session
       live "/admin/advanced-stats", AdminLive.Stats, :index
+      live "/portal/advanced-stars", AdminLive.Stats, :portal_dashboard
 end
+
 
   scope "/", Au4Web do
     pipe_through [:browser]

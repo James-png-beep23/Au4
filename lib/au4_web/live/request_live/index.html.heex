@@ -1,0 +1,52 @@
+
+    <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <.header class="mb-8">
+        {@page_title}
+        <:subtitle>Please fill out the details below to notify the management.</:subtitle>
+      </.header>
+
+      <div class="bg-white shadow-sm border border-gray-200 rounded-2xl p-8">
+        <.simple_form for={@form} id="request-form" phx-change="validate" phx-submit="save">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <.input
+              field={@form[:request_type]}
+              type="select"
+              label="Request Type"
+              options={["Maintenance", "Inspection", "Room Switching", "Complaint", "Other"]}
+            />
+            <.input
+              field={@form[:priority]}
+              type="select"
+              label="Priority"
+              options={["Low", "Medium", "High"]}
+            />
+          </div>
+
+          <.input
+            field={@form[:description]}
+            type="textarea"
+            label="What is the issue?"
+            placeholder="Describe the problem..."
+          />
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <.input field={@form[:requested_by]} label="Your Full Name" />
+            <.input field={@form[:available_date]} type="datetime-local" label="Repair Date Preference" />
+          </div>
+
+          <:actions>
+            <.button class="w-full justify-center py-3 text-lg" phx-disable-with="Sending...">
+              Submit Maintenance Request
+            </.button>
+          </:actions>
+        </.simple_form>
+      </div>
+
+      <div class="mt-6 text-center">
+        <.link navigate={~p"/"} class="text-sm font-semibold text-indigo-600 hover:text-indigo-500">
+          ← Back to Dashboard
+        </.link>
+      </div>
+    </div> 
+
+

@@ -13,10 +13,10 @@ defmodule Au4Web.UserApartmentLive.Assign do
     apartment: apartment,
     roles: Access.list_roles(),
     users: Au4.Account.list_users(),
-    selected_user: "",   # Add this
+    selected_user: "",
     selected_role: "",
     selected_floor: "",
-    selected_unit: ""    # Add this
+    selected_unit: ""
   )}
     end
 
@@ -26,14 +26,14 @@ def handle_event("validate", params, socket) do
   user_id = Map.get(params, "user_id", "")
   role_name = Map.get(params, "role_name", "")
   floor_id = Map.get(params, "floor_id", "")
-  unit_id = Map.get(params, "unit_id", "") # Match the name in your HTML
+  unit_id = Map.get(params, "unit_id", "")
 
   {:noreply,
     socket
     |> assign(:selected_user, user_id)
     |> assign(:selected_role, role_name)
     |> assign(:selected_floor, floor_id)
-    |> assign(:selected_unit, unit_id)} # Keep the unit sticky
+    |> assign(:selected_unit, unit_id)}
 end
 
   def handle_event("save", params, socket) do
@@ -60,4 +60,6 @@ end
       {:noreply, put_flash(socket, :error, "Could not save assignment. Check required fields.")}
   end
 end
+
+
 end

@@ -70,4 +70,25 @@ end
   defp assign_form(socket, %Ecto.Changeset{} = changeset) do
     assign(socket, :form, to_form(changeset))
   end
+
+  def handle_event("delete_permission", %{"permission_id" => permission_id}, socket) do
+    permission = Access.get_permission!(permission_id)
+
+    case Access.delete_permission( permission) do
+      {:ok, _} ->
+         updated_role = Access.update_permission(permission, %{})
+        notify_parent({:saved, updated_role})
+
+        {:noreply,
+         socket
+         |> put_flash(:info, "Permission removed successfully")
+         |> push_patch(to: socket.assigns.patch)}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> put_flash(:error, "Failed to remove permission")
+         |> push_patch(to: socket.assigns.patch)}
+    end
+  end
 end

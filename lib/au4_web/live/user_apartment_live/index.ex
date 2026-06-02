@@ -10,9 +10,13 @@ defmodule Au4Web.UserApartmentLive.Index do
     memberships =
       UserApartment
       |> Repo.all()
-      |> Repo.preload([:user, :apartment, :role, :unit])
+      |> Repo.preload([:user, :apartment, :floor, :role, :unit])
 
-    {:ok, assign(socket, :memberships, memberships)}
+    {:ok, socket
+    |> assign(:memberships, memberships)
+    |> assign(:search, "")
+    |> assign(:user, memberships)
+  }
   end
 
   # This allows you to update the role or unit directly from the master list
@@ -28,10 +32,70 @@ defmodule Au4Web.UserApartmentLive.Index do
     end
   end
 
+  # def handle_event("search", %{"search" => search}, socket) do
+  #   memberships = socket.assigns.user
+
+  #   filtered =
+  #     Enum.filter(memberships, fn membership ->
+  #       String.contains?(
+  #         String.downcase(membership.user.name <> " " <> membership.apartment.name),
+  #         String.downcase(search)
+  #       )
+  #     end)
+
+  #   {:noreply,
+  #    socket
+  #    |> assign(:memberships, filtered)
+  #    |> assign(:search, search)}
+  # end
+
+def handle_event("search", %{"search" => search}, socket) do
+  all_memberships = socket.assigns.user
+  term = String.downcase(search || "")
+
+  filtered =
+    Enum.filter(all_memberships, fn membership ->
+      user = membership.user
+      apartment = membership.apartment
+      unit = membership.unit
+
+      full_name =
+        ((user.first_name || "") <> " " <> (user.last_name || ""))
+        |> String.downcase()
+
+      email = String.downcase(user.email || "")
+      apartment_name = String.downcase(apartment.name || "")
+      unit_name = String.downcase((unit && unit.name) || "")
+
+      String.contains?(full_name, term) or
+      String.contains?(email, term) or
+      String.contains?(apartment_name, term) or
+      String.contains?(unit_name, term)
+    end)
+
+  {:noreply,
+   socket
+   |> assign(:memberships, filtered)
+   |> assign(:search, search)}
+end
+
+  def handle_event("delete_membership", %{"id" => id}, socket) do
+    membership = Repo.get!(UserApartment, id)
+
+    case Context.delete_user_apartment(membership) do
+      {:ok, _} ->
+        {:noreply, put_flash(socket, :info, "Lease deleted") |> refresh_data()}
+      {:error, _} ->
+        {:noreply, put_flash(socket, :error, "Deletion failed")}
+    end
+  end
+
   defp refresh_data(socket) do
-    memberships = UserApartment |> Repo.all() |> Repo.preload([:user, :apartment, :role, :unit])
+    memberships = UserApartment |> Repo.all() |> Repo.preload([:user, :apartment, :floor, :role, :unit])
     assign(socket, :memberships, memberships)
   end
+
+
 
 
 

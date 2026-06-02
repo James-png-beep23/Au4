@@ -18,3 +18,10 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
   * Source: https://github.com/phoenixframework/phoenix
 "# workdoneau4" 
 "# updatedapartment" 
+
+
+
+
+
+Seeding permission:
+   mix run priv/repo/seeds.exs

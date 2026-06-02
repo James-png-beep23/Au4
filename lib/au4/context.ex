@@ -8,6 +8,8 @@ defmodule Au4.Context do
 
   alias Au4.Context.Apartment
   alias Au4.Context.UserApartment
+  alias Au4.Context.Payments
+
 
   @doc """
   Returns the list of apartments.
@@ -32,6 +34,14 @@ def list_apartments do
              where: is_nil(ua.unit_id)),
 
     # Physical structure
+    floors: [units: :user]
+  ])
+end
+
+def list_apartments_with_floors_and_units() do
+  Apartment
+  |> Repo.all()
+  |> Repo.preload([
     floors: [units: :user]
   ])
 end
@@ -61,21 +71,39 @@ end
       ** (Ecto.NoResultsError)
 
   """
-  # def get_apartment!(id), do: Repo.get!(Apartment, id) |> Repo.preload([:users, user_apartments: [floors: [units: :user]]])
+  # def gets_apartment!(id), do: Repo.get!(Apartment, id) |> Repo.preload([:users, floors: :units])
 
-  def get_apartment!(id) do
+#   def get_apartment!(id) do
+#   Apartment
+#   |> Repo.get!(id)
+#   |> Repo.preload([
+#     # This filters Maya out of the top-level apartment list
+#     users: from(u in Au4.Account.User,
+#              join: ua in "user_apartments", on: ua.user_id == u.id,
+#              where: is_nil(ua.unit_id)),
+
+#     # This puts Maya exactly where she belongs (inside her unit)
+#     floors: [units: :user]
+#   ])
+# end
+
+def get_apartment!(id) do
   Apartment
   |> Repo.get!(id)
   |> Repo.preload([
-    # This filters Maya out of the top-level apartment list
-    users: from(u in Au4.Account.User,
-             join: ua in "user_apartments", on: ua.user_id == u.id,
-             where: is_nil(ua.unit_id)),
-
-    # This puts Maya exactly where she belongs (inside her unit)
-    floors: [units: :user]
+    users:
+      from(u in Au4.Account.User,
+        join: ua in "user_apartments",
+        on: ua.user_id == u.id,
+        where: is_nil(ua.unit_id),
+        distinct: u.id
+      ),
+    floors: [
+      units: [:user]
+    ]
   ])
 end
+
 
   @doc """
   Creates a apartment.
@@ -94,7 +122,6 @@ end
     |> Apartment.changeset(attrs)
     |> Repo.insert()
   end
-
   @doc """
   Updates a apartment.
 
@@ -109,6 +136,7 @@ end
   """
   def update_apartment(%Apartment{} = apartment, attrs) do
     apartment
+    |> Repo.preload(floors: [units: :user])
     |> Apartment.changeset(attrs)
     |> Repo.update()
   end
@@ -154,7 +182,7 @@ end
 
   """
   def list_floors do
-    Repo.all(Floor) |> Repo.preload(:units)
+    Repo.all(Floor) |> Repo.preload(units: :user)
   end
 
   @doc """
@@ -171,7 +199,7 @@ end
       ** (Ecto.NoResultsError)
 
   """
-  def get_floor!(id), do: Repo.get!(Floor, id)  |> Repo.preload(:units)
+  def get_floor!(id), do: Repo.get!(Floor, id)  |> Repo.preload(units: :user)
 
   @doc """
   Creates a floor.
@@ -250,7 +278,7 @@ end
 
   """
   def list_units do
-    Repo.all(Unit) |> Repo.preload([:floor, :user])
+    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests])
   end
 
   @doc """
@@ -267,7 +295,7 @@ end
       ** (Ecto.NoResultsError)
 
   """
-  def get_unit!(id), do: Repo.get!(Unit, id) |> Repo.preload([:floor, :user])
+  def get_unit!(id), do: Repo.get!(Unit, id) |> Repo.preload([:floor, :user, :requests])
 
   @doc """
   Creates a unit.
@@ -416,7 +444,7 @@ end
 def get_assignment_data(apartment_id) do
   Au4.Context.Apartment
   |> Repo.get!(apartment_id)
-  |> Repo.preload(floors: :units)
+  |> Repo.preload(floors: [units: :user])
 end
 
 
@@ -449,6 +477,157 @@ def has_available_units?(apartment) do
         _ -> false
       end
     end)
+  end)
+end
+
+
+def create_maintenance_request(%Unit{} = unit, attrs) do
+  unit = get_unit!(unit.id) |> Repo.preload(:requests)
+   # Ensure we have the latest data with requests preloaded
+  existing_requests =
+    (unit.requests || [])
+    |> Enum.map(&Map.from_struct/1)
+
+  updated_requests = existing_requests ++ [attrs]
+
+  unit
+  |> Unit.changeset(%{requests: updated_requests})
+  |> Repo.update()
+end
+
+
+
+
+def get_unit_requests_in_apartment(apartment_id, user_id) do
+  Apartment
+  |> where([a], a.id in ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], un in assoc(f, :units))
+  |> join(:inner, [a, f, un], usr in assoc(un, :user))
+  |> where([_a, _f, _un, usr], usr.id == ^user_id)
+  |> select([_a, _f, un, _usr], un.requests)
+  |> Repo.all()
+end
+
+def list_all_requests do
+  Apartment
+  |> Repo.all()
+  |> Repo.preload(floors: [:units])
+  |> Enum.flat_map(& &1.floors)
+  |> Enum.flat_map(& &1.units)
+  |> Enum.flat_map(& &1.requests)
+end
+
+def get_user_in_unit_apartment(apartment_id, user_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], un in assoc(f, :units))
+  |> join(:inner, [a, f, un], usr in assoc(un, :user))
+  |> where([_a, _f, _un, usr], usr.id == ^user_id)
+  |> select([_a, _f, _un, usr], usr)
+  |> Repo.one()
+end
+
+
+def get_all_requests_in_apartment(apartment_ids, user_id) when is_list(apartment_ids) do
+  Apartment
+  |> where([a], a.id in ^apartment_ids)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], un in assoc(f, :units))
+  |> join(:inner, [a, f, un], usr in assoc(un, :user))
+  |> where([_a, _f, _un, usr], usr.id == ^user_id)
+  |> select([_a, _f, un, _usr], un.requests)
+  |> Repo.all()
+  |> List.flatten()
+end
+
+def get_user_for_admin_view(user_id) do
+  Au4.Account.User
+  |> Repo.get!(user_id)
+  |> Repo.preload(:roles)
+end
+
+def get_user_apartment!(id), do: Repo.get!(UserApartment, id) |> Repo.preload([:user, :apartment, :role, :unit])
+
+def delete_user_apartment(%UserApartment{} = user_apartment) do
+    Repo.delete(user_apartment)
+end
+
+def generate_monthly_charges do
+  units = Repo.all(Au4.Context.Unit) |> Repo.preload(:users)
+
+  Enum.each(units, fn unit ->
+    Enum.each(unit.users, fn user ->
+      %Au4.Context.Payments{}
+      |> Payments.changeset(%{
+        unit_id: unit.id,
+        user_id: user.id,
+        amount: unit.rent_amount,
+        due_date: Date.utc_today(),
+        status: "pending"
+      })
+      |> Repo.insert()
+    end)
+  end)
+end
+
+
+def get_rent(apartment_id, floor_id, unit_id) do
+  Apartment
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> where([a, f, u],
+       a.id == ^apartment_id and
+       f.id == ^floor_id and
+       u.id == ^unit_id
+     )
+  |> select([_a, _f, u], u.price)
+  |> Repo.one()
+end
+
+def remove_user_from_apartment(user_id, apartment_id) do
+  from(ua in UserApartment,
+    where: ua.user_id == ^user_id and ua.apartment_id == ^apartment_id
+  )
+  |> Repo.one()
+  |> case do
+    nil -> {:error, :not_found}
+    user_apartment -> Repo.delete(user_apartment)
+  end
+
+
+end
+
+def search_vacant_units(apartment_name) do
+  Apartment
+  |> where([a], a.name == ^apartment_name)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> join(:left, [a, f, u], usr in assoc(u, :user))
+  |> where([_a, _f, u, usr], is_nil(usr.id))
+  |> select([_a, f, u, _usr], %{ floor: f.name, unit: u.name})
+  |> Repo.all()
+end
+
+
+def search_users_by_apartment(apartment_name, search_term) do
+  Apartment
+  |> where([a], a.name == ^apartment_name)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> join(:inner, [a, f, u], usr in assoc(u, :user))
+  |> where([_a, _f, _u, usr],
+       ilike(usr.name, ^"%#{search_term}%") or
+       ilike(usr.email, ^"%#{search_term}%")
+     )
+  |> select([_a, _f, _u, usr], usr)
+  |> Repo.all()
+end
+
+def user_in_apartment?(user, apartment_id) do
+  Enum.any?(user.user_apartments, fn ua ->
+    ua.apartment_id == apartment_id
   end)
 end
 
