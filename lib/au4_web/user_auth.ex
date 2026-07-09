@@ -265,7 +265,7 @@ end
   defp is_admin?(nil), do: false
   defp is_admin?(user) do
     Account.has_role?(user, "Super admin") ||
-    Account.has_role?(user, "Owner") ||
+    Account.has_role?(user, "Landlord") ||
     Account.has_role?(user, "backend_user") ||
     Account.has_role?(user, "support") ||
     Account.has_role?(user, "Tenant")

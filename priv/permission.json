@@ -1,31 +1,30 @@
 [
   {
-    "name": "view dashboard",
-    "description": "Allows users to view the main analytics dashboard"
+    "name": "Create users",
+    "description": "Allows creating new user accounts in the system."
   },
   {
-    "name": "manage users",
-    "description": "Allows creating, editing, and deleting system users"
-  },
-   {
-    "name": "create user",
-    "description": "Allows creating, editing, and deleting  users"
-  },
-   {
-    "name": "create roles",
-    "description": "Allows creating, editing, and deleting  roles"
-  },
-
-   {
-    "name": "assign permissions",
-    "description": "Allows assigning permissions to users and roles"
-  },
-    {
-    "name": "assign roles",
-    "description": "Allows assigning roles to users"
+    "name": "Edit users",
+    "description": "Allows updating user account information such as names, contact details, and other profile information."
   },
   {
-    "name": "edit roles",
-    "description": "Allows changing application-wide configuration"
+    "name": "Suspend users",
+    "description": "Allows suspending user accounts to prevent them from accessing the system without permanently deleting the accounts."
+  },
+  {
+    "name": "Reset passwords",
+    "description": "Allows resetting user passwords and initiating password recovery for user accounts."
+  },
+  {
+    "name": "Assign roles",
+    "description": "Allows assigning, changing, or removing roles for users to control their access levels."
+  },
+  {
+    "name": "Assign properties",
+    "description": "Allows assigning one or more properties or apartments to users for management or access purposes."
+  },
+  {
+    "name": "Activate/Deactivate accounts",
+    "description": "Allows activating or deactivating user accounts to enable or disable system access."
   }
 ]
