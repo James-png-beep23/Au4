@@ -9,6 +9,7 @@ defmodule Au4Web.RoleLive.Show do
   end
 
   @impl true
+  
   def handle_params(%{"id" => id}, _, socket) do
     {:noreply,
      socket

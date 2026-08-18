@@ -1,0 +1,169 @@
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">
+      Rent Payment
+    </h1>
+
+<p class="mt-2 text-gray-600">
+  Manage your rent payment for
+  <span class="font-semibold">
+    <%= @apartment.name %>
+  </span>
+</p>
+
+
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+<!-- Apartment Details -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+  <h2 class="text-xl font-semibold text-gray-900 mb-5">
+    Apartment Details
+  </h2>
+
+  <div class="space-y-4">
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Apartment
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        <%= @apartment.name %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Tenant
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        <%= @current_user.first_name %>
+        <%= @current_user.last_name %>
+      </p>
+    </div>
+    <div>
+      <p class="text-sm text-gray-500">
+        Phone Number
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        <%= @current_user.phone_number %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Email
+      </p>
+
+      <p class="text-gray-800">
+        <%= @current_user.email %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Apartment ID
+      </p>
+
+      <p class="text-gray-800">
+        <%= @apartment_id %>
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- Payment -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+  <h2 class="text-xl font-semibold text-gray-900 mb-5">
+    Make Payment
+  </h2>
+
+  <div class="mb-6">
+    <p class="text-sm text-gray-500">
+      Rent Amount:  KES <%= @price || "0" %>
+    </p>
+
+    <p class="text-3xl font-bold text-green-600 mt-1">
+      KES <%= @price || "0" %>
+    </p>
+  </div>
+
+  <form
+    phx-submit="pay_rent"
+    class="space-y-4"
+  >
+
+    <input
+      type="hidden"
+      name="user_id"
+      value={@current_user.id}
+    />
+
+    <input
+      type="hidden"
+      name="apartment_id"
+      value={@apartment_id}
+    />
+
+    <button
+      type="submit"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition"
+    >
+      Pay Rent
+    </button>
+
+  </form>
+
+</div>
+
+  </div>
+
+</div>
+
+<h2 class="text-xl font-bold">
+  Tenants
+</h2>
+
+<div class="space-y-4">
+<%!-- fix me --%>
+
+  <%= for tenant <- @apartment.users do %>
+
+    <div class="flex items-center justify-between p-4 border rounded-lg">
+
+      <div>
+        <p class="font-semibold">
+          <%= tenant.first_name %>
+          <%= tenant.last_name %> 
+        </p>
+
+        <p class="text-sm text-gray-500">
+          <%= tenant.phone_number %>
+        </p>
+      </div>
+
+      <button
+        type="button"
+        phx-click="prompt_tenant"
+        phx-value-user_id={tenant.id}
+        class="px-4 py-2 bg-green-600 text-white rounded-lg"
+      >
+        Prompt Rent
+      </button>
+
+    </div>
+
+  <% end %>
+
+</div>
+
+

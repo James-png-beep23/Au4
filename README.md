@@ -25,3 +25,570 @@ Ready to run in production? Please [check our deployment guides](https://hexdocs
 
 Seeding permission:
    mix run priv/repo/seeds.exs
+
+
+
+   backup for index.html.heex 
+
+<div class="space-y-6">
+  <!-- Header Section - Conditional based on role -->
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h2 class="text-3xl font-bold text-slate-900">
+        <%= cond do %>
+          <% Au4.Account.User.has_role?(@current_user, "Super admin") -> %>
+            Super Admin Overview
+          <% Au4.Account.User.has_role?(@current_user, "Landlord") -> %>
+            Landlord Overview
+          <% true -> %>
+            Tenant Overview
+        <% end %>
+      </h2>
+      
+      <p class="text-slate-500 mt-1">
+        <%= cond do %>
+          <% Au4.Account.User.has_role?(@current_user, "Super admin") -> %>
+            Global Portfolio Management Control Center
+          <% Au4.Account.User.has_role?(@current_user, "Landlord") -> %>
+            Manage your portfolio and resident directories.
+          <% true -> %>
+            Your apartment and community overview
+        <% end %>
+      </p>
+    </div>
+
+    <!-- Role-based action buttons in header -->
+    <div class="flex gap-2">
+      <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant") do %>
+        <a href={~p"/portal/dashboard"} 
+           class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+          <span class="material-symbols-outlined text-sm">home</span>
+          Tenant Portal
+        </a>
+      <% end %>
+      
+      <%= if @current_user && Au4.Account.has_role?(@current_user, "Landlord") do %>
+        <a href={~p"/portal/dashboard"} 
+           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+          <span class="material-symbols-outlined text-sm">business</span>
+          Landlord Portal
+        </a>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Apartment Selector - Only for Landlord and Super Admin -->
+  <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %> --%>
+    <div class="w-full md:w-72">
+      <label class="block text-sm text-slate-500 mb-2">
+        Select Apartment
+      </label>
+      <div class="relative">
+        <form method="get" action={~p"/admin/dashboard"}>
+          <select name="active_apartment" onchange="this.form.submit()" debounce="500"
+                  class="block w-full rounded-md border-gray-300 py-2 text-green-600 font-bold">
+                  <option value="" selected={is_nil(@selected_apartment_id)}>
+        None
+      </option>
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              <%= for apartment <- @apartments do %>
+                <option value={apartment.id} selected={apartment.id==@selected_apartment_id}>
+                  <%= apartment.name %>
+                </option>
+              <% end %>
+            <% else %>
+              <%= if Enum.empty?(@stats.current_user.user_apartments) do %>
+                <option disabled selected>No Apartments Assigned</option>
+              <% else %>
+                <%= for ua <- @stats.current_user.user_apartments do %>
+                  <%= if ua.role.name == "Landlord" do %>
+                    <option value={ua.apartment.id} selected={ua.apartment.id==@selected_apartment_id}>
+                      <%= ua.apartment.name %>
+                    </option>
+                  <% end %>
+                  <%= if ua.role.name == "Tenant" do %>
+                    <option value={ua.apartment.id} selected={ua.apartment.id==@selected_apartment_id}>
+                      <%= ua.apartment.name %>
+                    </option>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          </select>
+        </form>
+        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+          expand_more
+        </span>
+      </div>
+    </div>
+  
+
+  <!-- KPI Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Apartment Card -->
+    <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-slate-500 mb-1">
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              Total Users
+            <% else %>
+              Current Apartment
+            <% end %>
+          </p>
+          <h3 class="text-2xl font-bold text-emerald-700">
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              <%= @stats.total_users || 0 %>
+            <% else %>
+               <%= @stats.apartment_owned %>   
+              
+            <% end %>
+          </h3>
+        </div>  
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+          <span class="material-symbols-outlined text-indigo-700">
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              corporate_fare
+            <% else %>
+              domain
+            <% end %>
+          </span>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center gap-3">
+        <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+          <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+            Portfolio Total
+          <% else %>
+            Primary Asset
+          <% end %>
+        </span>
+        <span class="text-sm text-slate-500">
+          Active Status
+        </span>
+      </div>
+      <div class="absolute -bottom-5 -right-5 opacity-5">
+        <span class="material-symbols-outlined text-[120px]">apartment</span>
+      </div>
+    </div>
+
+    <!-- Residents Card -->
+     <%= if Au4.Account.User.has_role?(@current_user, "Super admin") or Au4.Account.User.has_role?(@current_user, "Landlord") do %>
+    <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm text-slate-500 mb-1">
+           
+              Total Tenants
+            <%!-- <% else %>
+              Total Residents --%>
+           
+          </p>
+          <h3 class="text-3xl font-bold text-emerald-700">
+          
+          <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+            <%= @stats.total_tenants %>
+            <% else %>
+            <%= @stats.total_tenant %>
+            <% end %>
+          </h3>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+          <span class="material-symbols-outlined text-indigo-700">groups</span>
+        </div>
+      </div>
+      <div class="mt-6 flex items-center gap-2 text-emerald-700 text-sm font-medium">
+        <span class="material-symbols-outlined text-sm">trending_up</span>
+        <span>+12% this month</span>
+      </div>
+      <div class="absolute -bottom-5 -right-5 opacity-5">
+        <span class="material-symbols-outlined text-[120px]">person_pin_circle</span>
+      </div>
+    </div>
+     <% end %>
+
+    <!-- Super Admin Specific Cards -->
+    <%= if Au4.Account.User.has_role?(@current_user, "Super admin") or Au4.Account.User.has_role?(@current_user, "Landlord")do %>
+    <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+      <!-- Total Apartments/Buildings -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Total Apartments/Buildings</p>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_apartments || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-blue-700">apartment</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-blue-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">business</span>
+          <span>Active properties</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">domain</span>
+        </div>
+      </div>
+      <% end %>
+
+      <!-- Total Units -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Total Units</p>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_units || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-purple-700">meeting_room</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-purple-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">inventory</span>
+          <span>Total inventory</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">door_open</span>
+        </div>
+      </div>
+
+      <!-- Occupied Units -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Occupied Units</p>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.occupied_units || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-700">check_circle</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-green-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">trending_up</span>
+          <%!-- <span><%= @stats.occupancy_rate || 0 %>% occupancy</span> --%>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">checklist</span>
+        </div>
+      </div>
+
+      <!-- Vacant Units -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Vacant Units</p>
+            <h3 class="text-3xl font-bold text-amber-600"><%= @stats.vacant_units || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-amber-700">pending</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-amber-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">warning</span>
+          <span>Available for rent</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">hourglass_empty</span>
+        </div>
+      </div>
+
+      <!-- Total Landlords -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Total Landlords</p>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_landlords || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-indigo-700">supervisor_account</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-indigo-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">person</span>
+          <span>Property owners</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">groups</span>
+        </div>
+      </div>
+
+      <!-- Monthly Rent Collected -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Monthly Rent Collected</p>
+            <h3 class="text-3xl font-bold text-emerald-700">Ksh <%= @stats.monthly_rent_collected || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-700">payments</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-green-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">trending_up</span>
+          <span>+8.5% vs last month</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">account_balance</span>
+        </div>
+      </div>
+
+      <!-- Outstanding Rent -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Outstanding Rent</p>
+            <%!-- <h3 class="text-3xl font-bold text-red-600">$<%= @stats.outstanding_rent || 0 %></h3> --%>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-red-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-red-700">warning</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-red-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">error</span>
+          <span>Needs attention</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">error_outline</span>
+        </div>
+      </div>
+
+      <!-- Maintenance Requests -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Maintenance Requests</p>
+            <%!-- <h3 class="text-3xl font-bold text-amber-600"><%= @stats.maintenance_requests || 0 %></h3> --%>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-amber-700">build</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-amber-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">pending</span>
+          <%!-- <span><%= @stats.pending_maintenance || 0 %> pending</span> --%>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">construction</span>
+        </div>
+      </div>
+
+      <!-- Lease Renewals Due -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Lease Renewals Due</p>
+            <%!-- <h3 class="text-3xl font-bold text-purple-600"><%= @stats.lease_renewals_due || 0 %></h3> --%>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-purple-700">assignment</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-purple-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">calendar_today</span>
+          <span>Next 30 days</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">event</span>
+        </div>
+      </div>
+
+      <!-- Active Staff -->
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Active Staff</p>
+            <%!-- <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.active_staff || 0 %></h3> --%>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-teal-700">badge</span>
+          </div>
+        </div>
+        <div class="mt-6 flex items-center gap-2 text-teal-700 text-sm font-medium">
+          <span class="material-symbols-outlined text-sm">group</span>
+          <span>Team members</span>
+        </div>
+        <div class="absolute -bottom-5 -right-5 opacity-5">
+          <span class="material-symbols-outlined text-[120px]">engineering</span>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Additional Card for Tenant -->
+    <%= if Au4.Account.User.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
+      <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Your Information</p>
+            <h3 class="text-2xl font-bold text-emerald-700">
+              <%= @stats.current_user.first_name %> <%= @stats.current_user.last_name %>
+            </h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-indigo-700">person</span>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Recent Activities - Super Admin Only -->
+  <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="flex items-center justify-between border-b border-slate-200 p-6">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">Recent Activities</h3>
+          <p class="text-sm text-slate-500">Latest system events and user actions</p>
+        </div>
+        <button class="text-emerald-700 font-semibold hover:underline">View All</button>
+      </div>
+      
+      <%!-- <div class="divide-y divide-slate-100">
+        <%= for activity <- @stats.recent_activities || [] do %>
+          <div class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-all">
+            <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-indigo-700 text-sm">
+                <%= activity.icon || "notifications" %>
+              </span>
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-medium text-slate-900"><%= activity.message %></p>
+              <p class="text-xs text-slate-500"><%= activity.timestamp || "Just now" %></p>
+            </div>
+            <span class="text-xs text-slate-400"><%= activity.time_ago || "2 hours ago" %></span>
+          </div>
+        <% end %>
+        
+        <!-- Fallback if no activities -->
+        <%= if Enum.empty?(@stats.recent_activities || []) do %>
+          <div class="px-6 py-8 text-center text-slate-500">
+            <span class="material-symbols-outlined text-4xl mb-2">inbox</span>
+            <p>No recent activities to display</p>
+          </div>
+        <% end %>
+      </div>--%>
+    </div> 
+  <% end %>
+
+  <!-- Directory Section - For Landlord and Super Admin -->
+  <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <!-- Directory Header -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 p-6">
+        <div>
+          <h3 class="text-2xl font-bold text-slate-900">
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              User Directory
+            <% else %>
+              Landlord Directory
+            <% end %>
+          </h3>
+          <p class="text-sm text-slate-500 mt-1">
+            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+              Manage apartment users and permissions
+            <% else %>
+              Directory of stakeholders for the selected property
+            <% end %>
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="w-11 h-11 rounded-xl border border-slate-300 flex items-center justify-center hover:bg-slate-100 transition-all">
+            <span class="material-symbols-outlined text-slate-500">filter_list</span>
+          </button>
+          <button class="px-4 py-3 rounded-xl bg-emerald-100 text-emerald-700 font-semibold hover:bg-emerald-200 transition-all">
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Directory Rows -->
+      <div class="divide-y divide-slate-100">
+        <%= for user <- @users do %>
+          <%= if Au4.Account.User.has_role?(@current_user, "Super admin") or 
+                (Au4.Account.User.has_role?(@current_user, "Landlord") and 
+                 Enum.any?(user.user_apartments, fn ua -> ua.apartment_id == @selected_apartment_id and ua.role.name == "Landlord" end)) do %>
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-all">
+              <!-- User -->
+              <div class="flex items-center gap-4 flex-1">
+                <div>
+                
+                  <p class="font-semibold text-slate-900">
+                    
+                    <%= user.first_name %> <%= user.last_name %>
+
+                  </p>
+                  <p class="text-sm text-slate-500">
+                    <%= user.email %>
+                  </p>
+                </div>
+              </div>
+
+              <!-- Role -->
+              <div>
+                <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
+                  <%= for ua <- user.user_apartments do %>
+                    <%= if ua.apartment_id == @selected_apartment_id or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+                      
+                     <%= ua.role.name %>
+                    <% end %>
+                  <% end %>
+                  <%= for role <- user.roles do %>
+                    <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+                      <%= role.name %>
+                    <% end %>
+                  <% end %>
+                </span>
+              </div>
+
+              <!-- Actions -->
+              <button class="text-slate-500 hover:text-emerald-700 transition-all">
+                <span class="material-symbols-outlined">more_vert</span>
+              </button>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-slate-200 bg-slate-50 px-6 py-4 text-center">
+        <button class="text-emerald-700 font-semibold hover:underline">
+          View All Directory Entries
+        </button>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Tenant Specific Information -->
+  <%= if Au4.Account.User.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="p-6">
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Your Requests</h3>
+        <div class="space-y-4">
+          <%= for reqs <- @stats.total_requests do %>
+            <%= for r <- reqs do %>
+              <div class="border-b border-slate-100 pb-4 last:border-0">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="font-semibold text-slate-900"><%= r.request_type %></p>
+                    <p class="text-sm text-slate-500"><%= r.description %></p>
+                  </div>
+                  <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                    <%= r.status %>
+                  </span>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <!-- Floating Action Button - Only for Landlord and Super Admin -->
+  <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+    <div class="fixed bottom-24 right-6 md:bottom-10 md:right-10">
+      <button class="w-14 h-14 rounded-full bg-emerald-700 text-white shadow-xl flex items-center justify-center hover:scale-105 transition-all">
+        <span class="material-symbols-outlined text-3xl">add</span>
+      </button>
+    </div>
+  <% end %>
+</div> 

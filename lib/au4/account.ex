@@ -23,6 +23,16 @@ defmodule Au4.Account do
   ])
 end
 
+def list_tenants do
+  User
+  |> join(:inner, [u], ua in assoc(u, :user_apartments))
+  |> join(:inner, [u, ua], r in assoc(ua, :role))
+  |> where([u, ua, r], r.name == "Tenant")
+  |> distinct(true)
+  |> preload([:roles, user_apartments: [:role, :apartment]])
+  |> Repo.all()
+end
+
 
 
 
@@ -42,6 +52,10 @@ end
   """
   def get_user_by_email(email) when is_binary(email) do
     Repo.get_by(User, email: email)
+  end
+
+  def get_user!(id) when is_integer(id) do
+    Repo.get!(User, id)
   end
 
   @doc """
@@ -412,6 +426,16 @@ end
     # Helper for a single ID
     def list_users_in_apartments(apartment_id) when is_integer(apartment_id) do
       list_users_in_apartments([apartment_id])
+    end
+
+
+    def has_role_tenant(apartment_id) do
+      list_users_in_apartments([apartment_id])
+      |> Enum.filter(fn user ->
+        Enum.any?(user.user_apartments, fn ua ->
+          ua.role.name == "Tenant" and ua.apartment_id == apartment_id
+        end)
+      end)
     end
 
     def list_users_by_apartment(apartment_id) do

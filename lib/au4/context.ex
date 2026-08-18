@@ -273,7 +273,7 @@ end
 
   ## Examples
 
-      iex> list_units()
+      iex> list_units()-
       [%Unit{}, ...]
 
   """
@@ -281,6 +281,9 @@ end
     Repo.all(Unit) |> Repo.preload([:floor, :user, :requests])
   end
 
+  def list_unite do
+    Repo.all(Unit) |> Repo.preload([:floor, :user])
+  end
   @doc """
   Gets a single unit.
 
@@ -295,7 +298,7 @@ end
       ** (Ecto.NoResultsError)
 
   """
-  def get_unit!(id), do: Repo.get!(Unit, id) |> Repo.preload([:floor, :user, :requests])
+  def get_unit!(id), do: Repo.get!(Unit, id) |> Repo.preload([:floor, :user])
 
   @doc """
   Creates a unit.
@@ -629,6 +632,68 @@ def user_in_apartment?(user, apartment_id) do
   Enum.any?(user.user_apartments, fn ua ->
     ua.apartment_id == apartment_id
   end)
+end
+
+def get_unit_in_apartment(apartment_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> select([_a, _f, u], u)
+  |> Repo.all()
+end
+
+@spec get_user_apartment(any()) :: any()
+def get_user_apartment(apartment_id) do
+  from(ua in UserApartment,
+    where: ua.apartment_id == ^apartment_id,
+    preload: [:user, :apartment, :role, :unit]
+  )
+  |> Repo.all()
+end
+
+
+def get_total_rent_for_all_apartments do
+  Apartment
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> select([_a, _f, u], sum(u.price))
+  |> Repo.one()
+
+end
+
+def get_total_rent_for_apartment(apartment_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> select([_a, _f, u], sum(u.price))
+  |> Repo.one()
+end
+
+
+
+def get_rent_per_unit(apartment_id, user_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> join(:inner, [a, f, u], ua in assoc(u, :user_apartments))
+  |> where([_a, _f, u, ua], ua.user_id == ^user_id)
+  |> select([_a, _f, u, ua], u.price)
+  |> Repo.one()
+
+end
+
+def get_unit_id_by_apartment_and_user(apartment_id, user_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> join(:inner, [a, f, u], ua in assoc(u, :user_apartments))
+  |> where([_a, _f, u, ua], ua.user_id == ^user_id)
+  |> select([_a, _f, u, _ua], u.id)
+  |> Repo.one()
 end
 
 end

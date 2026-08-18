@@ -17,6 +17,12 @@ defmodule Au4Web.Router do
     plug :accepts, ["json"]
   end
 
+  scope "/api", Au4Web do
+  pipe_through :api
+
+  post "/mpesa/callback", MpesaController, :callback
+end
+
   pipeline :owner_only do
     plug :require_authenticated_user #plug to ensure the user is authenticated
     plug :require_owner_role # plug to ensure the user has the "Owner" role
@@ -97,6 +103,9 @@ defmodule Au4Web.Router do
       live "/view", ViewApartmentLive.Index, :index
       live "/view/:id", ViewApartmentLive.Show, :show
       live "/requests", RequestLive.Index, :index
+
+      # live "/payment", PaymentLive.Index, :index
+      live "/admin/billing/:apartment_id", BillingLive
 
        live "/admin/users/roles", AccessLive.Index, :index
 

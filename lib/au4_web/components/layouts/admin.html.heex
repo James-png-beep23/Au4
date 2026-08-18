@@ -96,7 +96,7 @@
     </a>
 
     <a
-      href={~p"/requests"}
+      href={~p"/payment"}
       class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-100"
     >
       <span class="material-symbols-outlined">forum</span>
@@ -157,9 +157,12 @@
         class="hidden md:block border rounded-lg px-4 py-2"
       />
 
-      <button class="bg-slate-200 px-4 py-2 rounded-full">
+      <a
+        href={~p"/portal/dashboard"}
+        class="bg-slate-200 px-4 py-2 rounded-full inline-block hover:bg-slate-300 transition"
+      >
         Tenant Portal
-      </button>
+      </a>
     </div>
   </header>
 

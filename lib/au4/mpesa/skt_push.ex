@@ -4,7 +4,7 @@ defmodule Au4.StkPush do
 
   #This is the service that triggers a secure PIN prompt on a user's phone to authorize a payment.
 
-  def send_request(phone, amount, unit_id, number_of_attendees) do
+  def send_request(phone, amount, unit_id) do
     # calls Au4.Auth.get_token() to get the required Bearer token
     {:ok, token} = Au4.Auth.get_token()
 
@@ -31,9 +31,7 @@ defmodule Au4.StkPush do
       "PhoneNumber" => phone,
       # "CallBackURL" => "https://yourdomain.com/api/mpesa/callback",
       "CallBackURL" => "https://nonrhythmical-clementina-unspottable.ngrok-free.dev/api/mpesa/callback",
-      "AccountReference" => "Order_123",
-      "unit_id" => unit_id,
-      "number_of_attendees" => number_of_attendees,
+      "AccountReference" => "UNIT_#{unit_id}",
       "TransactionDesc" => "Payment for goods"
     })
 
@@ -46,7 +44,8 @@ defmodule Au4.StkPush do
       {"Accept", "application/json"}
     ]
 
-    HTTPoison.post("#{@base_url}/mpesa/stkpush/v1/processrequest", body, headers)
+    HTTPoison.post("#{@base_url}/mpesa/stkpush/v1/processrequest", body, headers,  timeout: 15_000,
+  recv_timeout: 15_000)
   end
 
 

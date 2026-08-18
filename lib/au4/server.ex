@@ -20,6 +20,11 @@ defmodule Au4.Server do
     GenServer.cast(__MODULE__, {:book_unit, unit_id, user_id})
   end
 
+  def get_rent_par_unit(apartment_id, floor_id, unit_id) do
+    GenServer.call(__MODULE__, {:get_rent, apartment_id, floor_id, unit_id})
+  end
+
+
   @doc "Returns all temporary bookings from memory"
   def get_live_bookings do
     GenServer.call(__MODULE__, :get_live_bookings)
@@ -38,6 +43,21 @@ defmodule Au4.Server do
   def handle_call(:get_apartment, _from, state) do
     {:reply, state.apartment, state}
   end
+
+  @impl true
+    def handle_call({:get_rent, apartment_id, floor_id, unit_id}, _from, state) do
+      with apartment when not is_nil(apartment) <-
+            Enum.find(state.apartment, &(&1.id == apartment_id)),
+          floor when not is_nil(floor) <-
+            Enum.find(apartment.floors, &(&1.id == floor_id)),
+          unit when not is_nil(unit) <-
+            Enum.find(floor.units, &(&1.id == unit_id)) do
+        {:reply, unit.price |> Decimal.to_integer(), state}
+      else
+        _ ->
+          {:reply, nil, state}
+      end
+    end
 
   @impl true
   def handle_call(:get_live_bookings, _from, state) do

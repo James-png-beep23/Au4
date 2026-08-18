@@ -27,6 +27,19 @@
 
     <!-- Role-based action buttons in header -->
     <div class="flex gap-2">
+
+     <%= if @selected_apartment_id do %>
+      <.link
+        navigate={~p"/admin/billing/#{@selected_apartment_id}"}
+        class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+        Billing
+      </.link>
+    <% else %>
+      <span class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+        Billing
+      </span>
+    <% end %>
+      
       <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant") do %>
         <a href={~p"/portal/dashboard"} 
            class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
@@ -46,7 +59,7 @@
   </div>
 
   <!-- Apartment Selector - Only for Landlord and Super Admin -->
-  <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+  <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %> --%>
     <div class="w-full md:w-72">
       <label class="block text-sm text-slate-500 mb-2">
         Select Apartment
@@ -55,6 +68,9 @@
         <form method="get" action={~p"/admin/dashboard"}>
           <select name="active_apartment" onchange="this.form.submit()" debounce="500"
                   class="block w-full rounded-md border-gray-300 py-2 text-green-600 font-bold">
+                  <option value="" selected={is_nil(@selected_apartment_id)}>
+        None
+      </option>
             <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
               <%= for apartment <- @apartments do %>
                 <option value={apartment.id} selected={apartment.id==@selected_apartment_id}>
@@ -71,6 +87,11 @@
                       <%= ua.apartment.name %>
                     </option>
                   <% end %>
+                  <%= if ua.role.name == "Tenant" do %>
+                    <option value={ua.apartment.id} selected={ua.apartment.id==@selected_apartment_id}>
+                      <%= ua.apartment.name %>
+                    </option>
+                  <% end %>
                 <% end %>
               <% end %>
             <% end %>
@@ -81,7 +102,7 @@
         </span>
       </div>
     </div>
-  <% end %>
+  
 
   <!-- KPI Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -91,19 +112,20 @@
         <div>
           <p class="text-sm text-slate-500 mb-1">
             <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
-              Total Properties
+              Total Users
             <% else %>
               Current Apartment
             <% end %>
           </p>
-          <%!-- <h3 class="text-2xl font-bold text-emerald-700">
+          <h3 class="text-2xl font-bold text-emerald-700">
             <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
-              <%= @stats.total_properties || @stats.total_apartments %>
+              <%= @stats.total_users || 0 %>
             <% else %>
-              <%= @stats.primary_apartment_name %>
+               <%= @stats.apartment_owned %>   
+              
             <% end %>
-          </h3> --%>
-        </div>
+          </h3>
+        </div>  
         <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
           <span class="material-symbols-outlined text-indigo-700">
             <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
@@ -132,18 +154,24 @@
     </div>
 
     <!-- Residents Card -->
+     <%= if Au4.Account.User.has_role?(@current_user, "Super admin") or Au4.Account.User.has_role?(@current_user, "Landlord") do %>
     <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="flex items-start justify-between">
         <div>
           <p class="text-sm text-slate-500 mb-1">
-            <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+           
               Total Tenants
-            <% else %>
-              Total Residents
-            <% end %>
+            <%!-- <% else %>
+              Total Residents --%>
+           
           </p>
           <h3 class="text-3xl font-bold text-emerald-700">
-            <%= @stats.total_users %>
+          
+          <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
+            <%= @stats.total_tenants %>
+            <% else %>
+            <%= @stats.total_tenant %>
+            <% end %>
           </h3>
         </div>
         <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
@@ -158,8 +186,10 @@
         <span class="material-symbols-outlined text-[120px]">person_pin_circle</span>
       </div>
     </div>
+     <% end %>
 
     <!-- Super Admin Specific Cards -->
+    <%= if Au4.Account.User.has_role?(@current_user, "Super admin") or Au4.Account.User.has_role?(@current_user, "Landlord")do %>
     <%= if Au4.Account.User.has_role?(@current_user, "Super admin") do %>
       <!-- Total Apartments/Buildings -->
       <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -180,13 +210,14 @@
           <span class="material-symbols-outlined text-[120px]">domain</span>
         </div>
       </div>
+      <% end %>
 
       <!-- Total Units -->
       <div class="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm text-slate-500 mb-1">Total Units</p>
-            <%!-- <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_units || 0 %></h3> --%>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_units || 0 %></h3>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center">
             <span class="material-symbols-outlined text-purple-700">meeting_room</span>
@@ -206,7 +237,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm text-slate-500 mb-1">Occupied Units</p>
-            <%!-- <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.occupied_units || 0 %></h3> --%>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.occupied_units || 0 %></h3>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
             <span class="material-symbols-outlined text-green-700">check_circle</span>
@@ -226,7 +257,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm text-slate-500 mb-1">Vacant Units</p>
-            <%!-- <h3 class="text-3xl font-bold text-amber-600"><%= @stats.vacant_units || 0 %></h3> --%>
+            <h3 class="text-3xl font-bold text-amber-600"><%= @stats.vacant_units || 0 %></h3>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center">
             <span class="material-symbols-outlined text-amber-700">pending</span>
@@ -246,7 +277,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm text-slate-500 mb-1">Total Landlords</p>
-            <%!-- <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_landlords || 0 %></h3> --%>
+            <h3 class="text-3xl font-bold text-emerald-700"><%= @stats.total_landlords || 0 %></h3>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center">
             <span class="material-symbols-outlined text-indigo-700">supervisor_account</span>
@@ -266,7 +297,7 @@
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm text-slate-500 mb-1">Monthly Rent Collected</p>
-            <%!-- <h3 class="text-3xl font-bold text-emerald-700">$<%= @stats.monthly_rent_collected || 0 %></h3> --%>
+            <h3 class="text-3xl font-bold text-emerald-700">Ksh <%= @stats.monthly_rent_collected || 0 %></h3>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
             <span class="material-symbols-outlined text-green-700">payments</span>
@@ -376,7 +407,27 @@
             <span class="material-symbols-outlined text-indigo-700">person</span>
           </div>
         </div>
+
+           <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Phone Number</p>
+            <h3 class="text-2xl font-bold text-emerald-700"><%= @stats.current_user.phone_number %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-700">phone</span>
+          </div>
+        </div>
+          <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm text-slate-500 mb-1">Monthly Rent</p>
+            <h3 class="text-2xl font-bold text-emerald-700">Ksh <%= @stats.unit_rent || 0 %></h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-green-100 flex items-center justify-center">
+            <span class="material-symbols-outlined text-green-700">payments</span>
+          </div>
+        </div>
       </div>
+   
     <% end %>
   </div>
 
@@ -460,8 +511,11 @@
               <!-- User -->
               <div class="flex items-center gap-4 flex-1">
                 <div>
+                
                   <p class="font-semibold text-slate-900">
+                    
                     <%= user.first_name %> <%= user.last_name %>
+
                   </p>
                   <p class="text-sm text-slate-500">
                     <%= user.email %>
@@ -474,7 +528,8 @@
                 <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-semibold">
                   <%= for ua <- user.user_apartments do %>
                     <%= if ua.apartment_id == @selected_apartment_id or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
-                      <%= ua.role.name %>
+                      
+                     <%= ua.role.name %>
                     <% end %>
                   <% end %>
                   <%= for role <- user.roles do %>
@@ -537,4 +592,4 @@
       </button>
     </div>
   <% end %>
-</div>
+</div> 
