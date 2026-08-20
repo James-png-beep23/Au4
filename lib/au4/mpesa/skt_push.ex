@@ -1,6 +1,6 @@
 defmodule Au4.StkPush do
   # alias Au4.Context
-  @base_url Application.compile_env(:au4, :mpesa)[:base_url]
+  @base_url Application.fetch_env!(:au4, :mpesa)[:base_url]
 
   #This is the service that triggers a secure PIN prompt on a user's phone to authorize a payment.
 

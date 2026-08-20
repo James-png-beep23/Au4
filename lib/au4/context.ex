@@ -278,11 +278,11 @@ end
 
   """
   def list_units do
-    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests])
+    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests, :charges])
   end
 
   def list_unite do
-    Repo.all(Unit) |> Repo.preload([:floor, :user])
+    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests, :charges])
   end
   @doc """
   Gets a single unit.

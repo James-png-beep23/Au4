@@ -12,6 +12,7 @@ defmodule Au4.Context.Unit do
     many_to_many :user, Au4.Account.User, join_through: Au4.Context.UserApartment, on_replace: :delete
     has_many :user_apartments, Au4.Context.UserApartment
     embeds_many :requests, Au4.Embed.Request, on_replace: :delete
+    embeds_many :charges, Au4.Embed.Charge, on_replace: :delete
 
     timestamps(type: :utc_datetime)
   end
@@ -23,6 +24,7 @@ defmodule Au4.Context.Unit do
     |> cast(attrs, [:name, :description, :booking, :price])
     |> validate_required([:name, :description, :price])
     |> cast_embed(:requests, with: &Au4.Embed.Request.changeset/2)
+    |> cast_embed(:charges, with: &Au4.Embed.Charge.changeset/2)
 
   end
 end

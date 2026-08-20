@@ -1,7 +1,11 @@
 defmodule Au4.Auth do
-  @base_url Application.get_env(:au4, :mpesa)[:base_url]
+  @base_url Application.fetch_env!(:au4, :mpesa)[:base_url]
+  # @base_url Application.compile_env(:au4, :mpesa)[:base_url]
+
+
 
   def get_token do
+
       client_id = Application.get_env(:au4, :mpesa)[:consumer_key]
       client_secret = Application.get_env(:au4, :mpesa)[:consumer_secret]
 
