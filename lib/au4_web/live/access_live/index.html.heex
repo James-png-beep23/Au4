@@ -20,7 +20,7 @@
                 <div class="text-sm text-gray-500"><%= user.email %></div>
               </td>
               <%= for role <- @roles do %>
-              <%= if role.name in ["support", "Super admin", "backend_user"] do %>
+              <%!-- <%= if role.name in ["support", "Super admin", "backend_user"] do %> --%>
                 <td class="text-center p-2">
                   <input
                     type="checkbox"
@@ -31,7 +31,7 @@
                     class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
                   />
                 </td>
-                <% end %>
+                <%!-- <% end %> --%>
               <% end %>
             </tr>
           <% end %>

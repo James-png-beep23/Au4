@@ -561,13 +561,16 @@
                 
                  <div class="cta-buttons">
                 <%!-- 1. Admin Dashboard: Only shows if user is logged in AND is an O --%>
-                <%= if @current_user && Au4.Account.has_role?(@current_user, "Super admin") || @current_user && Au4.Account.has_role?(@current_user, "Owner")
-                || @current_user && Au4.Account.has_role?(@current_user, "backend_user") || @current_user && Au4.Account.has_role?(@current_user, "support") do %>
+                <%= if @current_user && Au4.Account.has_role?(@current_user, "Super admin") || @current_user && Au4.Account.has_role?(@current_user, "Landlord") 
+                || @current_user && Au4.Account.has_role?(@current_user, "backend_user") || @current_user && Au4.Account.has_role?(@current_user, "support") do %> 
                   <a href={~p"/admin/dashboard"} class="btn">Admin Dashboard</a>
                 <% end %>
                  <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
                   <a href={~p"/portal/dashboard"} class="btn">Portal</a>
                 <% end %>
+                
+                  <%!-- <a href={~p"/admin/users/roles"} class="btn">users</a> --%>
+                
 
                 <%!-- 2. Auth Toggle: Shows Log In if guest, Log Out if authenticated --%>
                 <%= if !@current_user do %>

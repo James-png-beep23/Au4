@@ -1,9 +1,9 @@
 defmodule Au4.Auth do
-  @base_url "https://sandbox.safaricom.co.ke"
+  @base_url Application.get_env(:au4, :mpesa)[:base_url]
 
   def get_token do
-    client_id = "8YllKPd343AdB5hhGP9EQzzcVG2eOhh5etnpQjaW0OPFUmAl"
-    client_secret = "Ng4hgG3jbLlMIMUYWcWsIfDmOyieHhPcwRhgJFfpWGRQQ854VZhabDA5J0RxBJEK"
+      client_id = Application.get_env(:au4, :mpesa)[:consumer_key]
+      client_secret = Application.get_env(:au4, :mpesa)[:consumer_secret]
 
     # Encode credentials for Basic Auth
     auth = Base.encode64("#{client_id}:#{client_secret}")

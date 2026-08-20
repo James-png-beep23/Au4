@@ -1,6 +1,6 @@
 defmodule Au4.StkPush do
   # alias Au4.Context
-  @base_url "https://sandbox.safaricom.co.ke"
+  @base_url Application.compile_env(:au4, :mpesa)[:base_url]
 
   #This is the service that triggers a secure PIN prompt on a user's phone to authorize a payment.
 
@@ -12,8 +12,8 @@ defmodule Au4.StkPush do
       DateTime.utc_now()
       |> DateTime.add(3, :hour)
       |> Calendar.strftime("%Y%m%d%H%M%S")
-    short_code = "174379"
-    passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    short_code = Application.get_env(:au4, :mpesa)[:shortcode]
+    passkey = Application.get_env(:au4, :mpesa)[:passkey]
 
 
     password = Base.encode64("#{short_code}#{passkey}#{timestamp}")
@@ -30,7 +30,7 @@ defmodule Au4.StkPush do
       "PartyB" => short_code,
       "PhoneNumber" => phone,
       # "CallBackURL" => "https://yourdomain.com/api/mpesa/callback",
-      "CallBackURL" => "https://nonrhythmical-clementina-unspottable.ngrok-free.dev/api/mpesa/callback",
+      "CallBackURL" => Application.get_env(:au4, :mpesa)[:callback_url],
       "AccountReference" => "UNIT_#{unit_id}",
       "TransactionDesc" => "Payment for goods"
     })
@@ -44,8 +44,8 @@ defmodule Au4.StkPush do
       {"Accept", "application/json"}
     ]
 
-    HTTPoison.post("#{@base_url}/mpesa/stkpush/v1/processrequest", body, headers,  timeout: 15_000,
-  recv_timeout: 15_000)
+    HTTPoison.post("#{@base_url}/mpesa/stkpush/v1/processrequest", body, headers)
+
   end
 
 
@@ -58,8 +58,8 @@ defmodule Au4.StkPush do
       |> DateTime.add(3, :hour)
       |> Calendar.strftime("%Y%m%d%H%M%S")
 
-    short_code = "174379"
-    passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+    short_code = Application.get_env(:au4, :mpesa)[:shortcode]
+    passkey = Application.get_env(:au4, :mpesa)[:passkey]
     password = Base.encode64("#{short_code}#{passkey}#{timestamp}")
 
     body = Jason.encode!(%{

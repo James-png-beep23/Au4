@@ -21,6 +21,7 @@ defmodule Au4Web.Router do
   pipe_through :api
 
   post "/mpesa/callback", MpesaController, :callback
+  post "/mpesa/simulate/:checkout_request_id", MpesaController, :simulate_callback
 end
 
   pipeline :owner_only do
@@ -107,7 +108,13 @@ end
       # live "/payment", PaymentLive.Index, :index
       live "/admin/billing/:apartment_id", BillingLive
 
-       live "/admin/users/roles", AccessLive.Index, :index
+      live "/admin/users/roles", AccessLive.Index, :index
+
+
+      live "/transactions", TransactionLive.Index, :index
+
+
+
 
 
 

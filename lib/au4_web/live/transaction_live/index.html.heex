@@ -1,0 +1,32 @@
+<.header>
+  Listing Transactions
+  <%!-- <:actions>
+    <.link patch={~p"/transactions/new"}>
+      <.button>New Transaction</.button>
+    </.link>
+  </:actions> --%>
+</.header>
+
+<.table
+  id="transactions"
+  rows={@streams.transactions}
+>
+  <:col :let={{_id, transaction}} label="Status">{transaction.status}</:col>
+  <:col :let={{_id, transaction}} label="Amount">{transaction.amount}</:col>
+  <:col :let={{_id, transaction}} label="Checkout Request ID">{transaction.checkout_request_id}</:col>
+  <:col :let={{_id, transaction}} label="Merchant Request ID">{transaction.merchant_request_id}</:col>
+  <:col :let={{_id, transaction}} label="Mpesa Receipt Number">{transaction.mpesa_receipt_number}</:col>
+  <:col :let={{_id, transaction}} label="Phone Number">{transaction.unit_id}</:col>
+  <:col :let={{_id, transaction}} label="Transaction Date">{transaction.transaction_date}</:col>
+  <:col :let={{_id, transaction}} label="Created At">{transaction.inserted_at}</:col>
+  <:col :let={{_id, transaction}} label="Updated At">{transaction.updated_at}</:col>
+
+  <:action :let={{id, transaction}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: transaction.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>

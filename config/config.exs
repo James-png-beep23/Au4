@@ -61,6 +61,17 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :au4, :mpesa,
+  base_url: "https://sandbox.safaricom.co.ke",
+  shortcode: "174379",
+  passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+  consumer_key: "8YllKPd343AdB5hhGP9EQzzcVG2eOhh5etnpQjaW0OPFUmAl",
+  consumer_secret: "Ng4hgG3jbLlMIMUYWcWsIfDmOyieHhPcwRhgJFfpWGRQQ854VZhabDA5J0RxBJEK",
+  callback_url: "https://nonrhythmical-clementina-unspottable.ngrok-free.dev/api/mpesa/callback"
+
+
+
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
