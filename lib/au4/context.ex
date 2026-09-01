@@ -278,11 +278,11 @@ end
 
   """
   def list_units do
-    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests, :charges])
+    Repo.all(Unit) |> Repo.preload([:floor, :user, :charges, :requests])
   end
 
   def list_unite do
-    Repo.all(Unit) |> Repo.preload([:floor, :user, :requests, :charges])
+    Repo.all(Unit) |> Repo.preload([:floor, :user, :charges, :requests])
   end
   @doc """
   Gets a single unit.
@@ -501,16 +501,16 @@ end
 
 
 
-def get_unit_requests_in_apartment(apartment_id, user_id) do
-  Apartment
-  |> where([a], a.id in ^apartment_id)
-  |> join(:inner, [a], f in assoc(a, :floors))
-  |> join(:inner, [a, f], un in assoc(f, :units))
-  |> join(:inner, [a, f, un], usr in assoc(un, :user))
-  |> where([_a, _f, _un, usr], usr.id == ^user_id)
-  |> select([_a, _f, un, _usr], un.requests)
-  |> Repo.all()
-end
+# def get_unit_requests_in_apartment(apartment_id, user_id) do
+#   Apartment
+#   |> where([a], a.id in ^apartment_id)
+#   |> join(:inner, [a], f in assoc(a, :floors))
+#   |> join(:inner, [a, f], un in assoc(f, :units))
+#   |> join(:inner, [a, f, un], usr in assoc(un, :user))
+#   |> where([_a, _f, _un, usr], usr.id == ^user_id)
+#   |> select([_a, _f, un, _usr], un.requests)
+#   |> Repo.all()
+# # end
 
 def list_all_requests do
   Apartment
@@ -696,4 +696,64 @@ def get_unit_id_by_apartment_and_user(apartment_id, user_id) do
   |> Repo.one()
 end
 
+def calculate_meter_reading(previous, current) do
+  usage = Decimal.sub(current, previous)
+
+  if Decimal.negative?(usage) do
+    Decimal.new("0")
+  else
+    usage
+  end
+end
+
+def calculate_water_charge(previous, current, cost_per_unit) do
+  usage = calculate_meter_reading(previous, current)
+
+  Decimal.mult(usage, cost_per_unit)
+end
+
+def charge_total(security, parking, service_fee, internet, late_penalty, key_access_card, utility_reconnection, damages, repair) do
+  security
+   |> Decimal.add(parking)
+   |> Decimal.add(service_fee)
+   |> Decimal.add(internet)
+   |> Decimal.add(late_penalty)
+   |> Decimal.add(key_access_card)
+   |> Decimal.add(utility_reconnection)
+   |> Decimal.add(damages)
+   |> Decimal.add(repair)
+end
+
+def get_water_unit_price(apartment_id) do
+  Apartment
+  |> where([a], a.id == ^apartment_id)
+  |> join(:inner, [a], f in assoc(a, :floors))
+  |> join(:inner, [a, f], u in assoc(f, :units))
+  |> select([_a, _f, u], u.booking)
+  |> Repo.one()
+end
+
+
+def get_apartment_with_units!(id) do
+    Repo.get!(Apartment, id)
+    |> Repo.preload([floors: [units: [:user]]])
+  end
+
+  def bulk_update_unit_charges(unit_ids, charges) do
+    # Only include fields that exist in the unit schema
+    allowed_fields = [:security, :parking, :water_unit_price, :service_fee,
+                      :internet, :late_penalty, :key_access_card, :utility_reconnection]
+
+    update_map = Enum.filter(charges, fn {k, v} ->
+      k in allowed_fields and v != nil
+    end) |> Enum.into(%{})
+
+    if Enum.empty?(update_map) do
+      {:error, "No valid charges to update"}
+    else
+      query = from(u in Unit, where: u.id in ^unit_ids)
+      {count, _} = Repo.update_all(query, set: update_map)
+      {:ok, count}
+    end
+  end
 end

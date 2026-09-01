@@ -105,6 +105,16 @@ end
       live "/view/:id", ViewApartmentLive.Show, :show
       live "/requests", RequestLive.Index, :index
 
+      # charges
+      # live "/charges", ChargeLive.Index, :index
+      # live "/charges/new", ChargeLive.Index, :new
+      # live "/charges/:id/edit", ChargeLive.Index, :edit
+
+      # live "/charges/:id", ChargeLive.Show, :show
+      # live "/charges/:id/show/edit", ChargeLive.Show, :edit
+
+      live "/charges/:apartment_id", ChargeLive.Index, :index
+
       # live "/payment", PaymentLive.Index, :index
       live "/admin/billing/:apartment_id", BillingLive
 

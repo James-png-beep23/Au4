@@ -1,0 +1,26 @@
+<.header>
+  Charge {@charge.id}
+  <:subtitle>This is a charge record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/charges/#{@charge}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit charge</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@charge.name}</:item>
+</.list>
+
+<.back navigate={~p"/charges"}>Back to charges</.back>
+
+<.modal :if={@live_action == :edit} id="charge-modal" show on_cancel={JS.patch(~p"/charges/#{@charge}")}>
+  <.live_component
+    module={Au4Web.ChargeLive.FormComponent}
+    id={@charge.id}
+    title={@page_title}
+    action={@live_action}
+    charge={@charge}
+    patch={~p"/charges/#{@charge}"}
+  />
+</.modal>

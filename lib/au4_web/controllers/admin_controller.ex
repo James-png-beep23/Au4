@@ -156,7 +156,7 @@ defmodule Au4Web.AdminController do
     end
 
 
-     {selected_apartment_id, apartment_list, unit_rent, request, admin, apartment_name, tenant} =
+     {selected_apartment_id, apartment_list, unit_rent, admin, apartment_name, tenant} =
      if !Account.User.has_role?(current_user, "Super admin") do
 
         selected_apartment_id =
@@ -209,15 +209,15 @@ defmodule Au4Web.AdminController do
           |> Enum.uniq()
 
 
-        request = Context.get_unit_requests_in_apartment(apartment_ids, current_user.id)
+        # request = Context.get_unit_requests_in_apartment(apartment_ids, current_user.id)
 
         admin = Context.get_user_for_admin_view(current_user.id)
 
-        {selected_apartment_id, apartment_list, unit_rent, request, admin, apartment_name, tenant}
+        {selected_apartment_id, apartment_list, unit_rent, admin, apartment_name, tenant}
 
        else
         # For super admin, set defaults
-        {selected_apartment_id,"",[], [], nil, "", []}
+        {selected_apartment_id,"",[], nil, "", []}
       end
 
 
@@ -236,7 +236,7 @@ defmodule Au4Web.AdminController do
       current_user: current_user,
       primary_apartment_name: apartment_list,
       apartment_owned: apartment_name,
-      total_requests: request,
+      # total_requests: request,
       total_tenant: length(tenant),
       admin: admin,
       user_full_name: "#{current_user.first_name} #{current_user.last_name}"

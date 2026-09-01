@@ -29,9 +29,225 @@
   <% end %>
 </ul>
 
-<!-- FLOORS & UNITS -->
+
 <h2 class="mt-6 text-lg font-bold">Floors</h2>
 
+<!-- BULK BILLING BUTTON -->
+<div class="mt-4 flex justify-end">
+  <button
+    phx-click="toggle_bulk_form"
+    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition"
+  >
+    <span class="material-symbols-outlined text-[18px]"></span>
+    Bulk Edit Charges
+  </button>
+</div>
+
+<!-- BULK CHARGES FORM -->
+<%= if @show_bulk_form do %>
+  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">Bulk Update Charges</h3>
+    
+   <form phx-submit="apply_bulk_update">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Security Deposit -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Security Deposit</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[security]"
+            value={@bulk_charges.security}
+            placeholder="e.g. 5000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Parking Fee -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Parking Fee</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[parking]"
+            value={@bulk_charges.parking}
+            placeholder="e.g. 2500"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Water Unit Price -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Water Rate (per m³)</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[water_unit_price]"
+            value={@bulk_charges.water_unit_price}
+            placeholder="e.g. 150"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Service Fee -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Service Fee</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[service_fee]"
+            value={@bulk_charges.service_fee}
+            placeholder="e.g. 1000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Internet -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Internet (Monthly)</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[internet]"
+            value={@bulk_charges.internet}
+            placeholder="e.g. 1500"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Late Penalty -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Late Penalty</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[late_penalty]"
+            value={@bulk_charges.late_penalty}
+            placeholder="e.g. 5%"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Key Access Card -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Key Access Card</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[key_access_card]"
+            value={@bulk_charges.key_access_card}
+            placeholder="e.g. 1000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        
+        <!-- Utility Reconnection -->
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Utility Reconnection</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[utility_reconnection]"
+            value={@bulk_charges.utility_reconnection}
+            placeholder="e.g. 2000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Damages</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[damages]"
+            value={@bulk_charges.damages}
+            placeholder="e.g. 2000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-sm font-medium text-gray-700">Repair</label>
+          <input
+            type="number"
+            step="0.01"
+            name="bulk_charges[repair]"
+            value={@bulk_charges.repair}
+            placeholder="e.g. 2000"
+            class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+
+     
+      <h4 class="text-sm font-medium text-gray-700 mb-2">Select Specific Units to Update</h4>
+      <%!-- <div class="max-h-48 overflow-y-auto"> --%>
+        <div class="grid grid-cols-3 md:grid-cols-4 gap-2">
+          <%= for floor <- @apartment.floors do %>
+            <%= for unit <- floor.units do %>
+              <label class="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  phx-click="toggle_unit_selection"
+                  phx-value-unit_id={unit.id}
+                  checked={unit.id in @selected_units}
+                  class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span>
+                  <%= floor.name %> - <%= unit.name %>
+                  <%= if unit.user != [] do %>
+                    <span class="text-green-600">(Occupied)</span>
+                  <% else %>
+                    <span class="text-gray-400">(Vacant)</span>
+                  <% end %>
+                </span>
+              </label>
+            <% end %>
+          <% end %>
+        </div>
+        <%!-- </div> --%>
+      
+      
+      
+    <div class="mt-6 flex flex-wrap gap-3">
+      
+        <button
+          type="submit"
+          name="action"
+          value="all"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition"
+        >
+          Apply to ALL <%= @total_units %> Units
+        </button>
+
+        <button
+          type="submit"
+          name="action"
+          value="selected"
+          disabled={@selected_units == []}
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition disabled:opacity-50"
+        >
+          Apply to Selected Units (<%= length(@selected_units) %>)
+        </button>
+        
+        <button
+          type="button"
+          phx-click="toggle_bulk_form"
+          class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg text-sm font-medium transition"
+        >
+          Cancel
+        </button>
+        
+        <span class="text-sm text-gray-500 self-center">
+          ⚡ Units without values will keep their current rates
+        </span>
+      </div>
+    </form>
+  </div>
+<% end %>
+
+<!-- Display floors and units (your existing code) -->
 <%= for floor <- @apartment.floors do %>
   <div class="mt-4 border rounded p-3">
     <h3 class="font-semibold">
@@ -44,6 +260,18 @@
         <li class="mt-2">
           <strong>Unit:</strong> <%= unit.name %> —
           <%= unit.description %>
+          
+          <!-- Display current charges -->
+          <div class="ml-4 text-xs text-gray-500 grid grid-cols-2 md:grid-cols-3 gap-1">
+            <span>Rent: KSh <%= unit.price || 0 %></span>
+            <span>Security: KSh <%= unit.security || 0 %></span>
+            <span>Parking: KSh <%= unit.parking || 0 %></span>
+            <span>Water Rate: KSh <%= unit.water_unit_price || 0 %></span>
+            <span>Service Fee: KSh <%= unit.service_fee || 0 %></span>
+            <span>Internet: KSh <%= unit.internet || 0 %></span>
+            <span>Damages: KSh <%= unit.damages || 0 %></span>
+            <span>Repair: KSh <%= unit.repair || 0 %></span>
+          </div>
 
           <!-- UNIT USER -->
           <div class="ml-4 text-sm text-gray-600">
@@ -66,6 +294,7 @@
 <% end %>
 
 <.back navigate={~p"/apartments"}>Back to apartments</.back>
+
 
 <.modal
   :if={@live_action == :edit}

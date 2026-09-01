@@ -80,6 +80,133 @@
 </div>
 
 
+<%!-- monthly charges  --%>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+  <h2 class="text-xl font-semibold text-gray-900 mb-5">
+    Billing Charges
+  </h2>
+
+  <div class="space-y-4">
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Rent
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        
+            <%= @rent %>
+       
+      </p>
+    </div>
+   
+    <div>
+      <p class="text-sm text-gray-500">
+        Security
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        <%= @unit.security %>
+      
+      </p>
+    </div>
+    <div>
+      <p class="text-sm text-gray-500">
+        Water 
+      </p>
+
+      <p class="text-lg font-medium text-gray-900">
+        <%= @current_user.phone_number %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Parking
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.parking %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Service Fee
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.service_fee %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Internet
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.internet %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Late Penalties
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.late_penalty %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Damages
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.damages %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Repairs
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.repair %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Key/Card
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.key_access_card %>
+      </p>
+    </div>
+
+    <div>
+      <p class="text-sm text-gray-500">
+        Utility Reconnection
+      </p>
+
+      <p class="text-gray-800">
+        <%= @unit.utility_reconnection %>
+      </p>
+    </div>
+
+
+
+  </div>
+</div>
+
+
 <!-- Payment -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
 

@@ -1,0 +1,128 @@
+<.header>
+  Insert charges for a specific unit in apartment
+</.header>
+
+<p class="mt-4">
+  Apartment: <%= @apartment.name %>
+</p>
+
+<.form
+  for={%{}}
+  phx-change="calculate_billing_charges"
+  phx-submit="save"
+  class="space-y-6 mt-6"
+>
+
+  <div>
+    <label class="block text-sm font-medium text-gray-700">
+      Select Unit
+    </label>
+
+    <select
+      name="unit_id"
+      required
+      class="mt-1 block w-full rounded-md border-gray-300"
+    >
+      <option value="">Choose a unit...</option>
+
+      <%= for unit <- @units do %>
+        <option value={unit.id}>
+          <%= unit.name %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+
+  <div>
+  <label>Previous Water Reading</label>
+  <input
+    type="number"
+    step="0.01"
+    name="previous_water_reading"
+    value={@previous_water_reading}
+  />
+</div>
+
+<div>
+  <label>Current Water Reading</label>
+  <input
+    type="number"
+    step="0.01"
+    name="current_water_reading"
+    value={@current_water_reading}
+  />
+</div>
+
+<div>
+  <label>Water Cost Per Unit</label>
+  <input
+    type="number"
+    step="0.01"
+    name="water_cost_per_unit"
+    value={@water_cost_per_unit}
+  />
+</div>
+
+<div>
+  <label>Water Usage</label>
+  <input
+    type="text"
+    value={@water_usage}
+    readonly
+  />
+</div>
+
+<div>
+  <label>Water Charge</label>
+  <input
+    type="text"
+    value={@water_charge}
+    readonly
+  />
+</div>
+
+  <div>
+    <label>Waste</label>
+
+    <input
+      type="number"
+      step="0.01"
+      name="waste"
+      value={@waste}
+      class="mt-1 block w-full rounded-md border-gray-300"
+    />
+  </div>
+
+  <div>
+    <label>Other</label>
+
+    <input
+      type="number"
+      step="0.01"
+      name="other"
+      value={@other}
+      class="mt-1 block w-full rounded-md border-gray-300"
+    />
+  </div>
+
+  <div>
+    <label class="font-bold">
+      Total
+    </label>
+
+    <input
+      type="text"
+      value={@total}
+      readonly
+      class="mt-1 block w-full rounded-md bg-gray-100"
+    />
+  </div>
+
+  <button
+    type="submit"
+    class="px-4 py-2 bg-blue-600 text-white rounded"
+  >
+    Save Charges
+  </button>
+
+</.form>

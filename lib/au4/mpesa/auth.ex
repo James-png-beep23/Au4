@@ -1,34 +1,31 @@
 defmodule Au4.Auth do
-  @base_url Application.fetch_env!(:au4, :mpesa)[:base_url]
-  # @base_url Application.compile_env(:au4, :mpesa)[:base_url]
-
-
 
   def get_token do
+    config = Application.fetch_env!(:au4, :mpesa)
 
-      client_id = Application.get_env(:au4, :mpesa)[:consumer_key]
-      client_secret = Application.get_env(:au4, :mpesa)[:consumer_secret]
+    base_url = config[:base_url]
+    client_id = config[:consumer_key]
+    client_secret = config[:consumer_secret]
 
-    # Encode credentials for Basic Auth
     auth = Base.encode64("#{client_id}:#{client_secret}")
 
-    #It creates a Basic Auth header. This tells the Safaricom server,
-    # "Here are my encoded credentials; please verify them."
-    headers = [{"Authorization", "Basic #{auth}"}]
+    headers = [
+      {"Authorization", "Basic #{auth}"}
+    ]
 
-    #API Call: The function makes a GET request to the Safaricom OAuth endpoint to request an access token.
+    url =
+      "#{base_url}/oauth/v1/generate?grant_type=client_credentials"
 
-    url = "#{@base_url}/oauth/v1/generate?grant_type=client_credentials"
-
-
-     # It uses the HTTPoison library to make a GET request to the specific Safaricom endpoint
     case HTTPoison.get(url, headers) do
       {:ok, %{status_code: 200, body: body}} ->
         token = Jason.decode!(body)["access_token"]
         {:ok, token}
-      {:error, reason} -> {:error, reason}
+
+      {:ok, %{status_code: status_code, body: body}} ->
+        {:error, {status_code, body}}
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
-
-
 end

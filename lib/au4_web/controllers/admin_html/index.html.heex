@@ -30,6 +30,19 @@
 
      <%= if @selected_apartment_id do %>
       <.link
+        navigate={~p"/charges/#{@selected_apartment_id}"}
+        class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+        Charge
+      </.link>
+    <% else %>
+      <span class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
+        Charge
+      </span>
+    <% end %>
+
+
+     <%= if @selected_apartment_id do %>
+      <.link
         navigate={~p"/admin/billing/#{@selected_apartment_id}"}
         class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
         Billing
@@ -39,6 +52,25 @@
         Billing
       </span>
     <% end %>
+
+     
+       <%= if @selected_apartment_id do %>
+        <.link
+          navigate={~p"/apartments/#{@selected_apartment_id}"}
+          class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
+        >
+          <span class="material-symbols-outlined text-sm">home</span>
+          Show
+        </.link>
+      <% else %>
+        <span
+          class="inline-flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
+        >
+          <span class="material-symbols-outlined text-sm">home</span>
+          Show
+        </span>
+      <% end %>
+    
       
       <%= if @current_user && Au4.Account.has_role?(@current_user, "Tenant") do %>
         <a href={~p"/portal/dashboard"} 
@@ -559,7 +591,7 @@
   <% end %>
 
   <!-- Tenant Specific Information -->
-  <%= if Au4.Account.User.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
+  <%!-- <%= if Au4.Account.User.has_role?(@current_user, "Tenant") && !Au4.Account.is_admin?(@current_user) do %>
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
       <div class="p-6">
         <h3 class="text-xl font-bold text-slate-900 mb-4">Your Requests</h3>
@@ -582,7 +614,7 @@
         </div>
       </div>
     </div>
-  <% end %>
+  <% end %> --%>
 
   <!-- Floating Action Button - Only for Landlord and Super Admin -->
   <%= if Au4.Account.User.has_role?(@current_user, "Landlord") or Au4.Account.User.has_role?(@current_user, "Super admin") do %>
